@@ -7,6 +7,23 @@ import argparse
 import math
 import re
 
+class Metrics(object):
+        def __init__(self):
+                self.min = None
+                self.max = None
+                self.dev = None
+                self.mean = None
+
+        def __repr__(self):
+                return self.__str__()
+        def __str__(self):
+                return str({
+                        'max': self.id,
+                        'max': self.user,
+                        'dev': self.category,
+                        'mean': self.timestamp
+                })
+        
 
 def extract_txt(filename):
 	'''
@@ -19,10 +36,16 @@ def extract_txt(filename):
 			return None
 		dicts = []
 		for line in f:
-                    structure = re.split(', () ',line)
-                    dicts.append(structure)
+                    structure = re.split('([(]?)(.*?)([)]?)(,|$)',line)
+                    list1 = []
+                    list1.append(structure[2])
+                    list1.append(structure[7])
+                    list1.append(structure[12])
+                    list1.append(structure[17])
+                    dicts.append(list1)
+                    
 	df = pd.DataFrame(dicts)
-	#print df
+	#print dicts
 	return df
 		
 
