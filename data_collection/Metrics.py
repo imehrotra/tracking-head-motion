@@ -4,7 +4,7 @@ class Metrics(object):
                 self.max = None
                 self.dev = None
                 self.mean = None
-
+                self.med = None
         def __repr__(self):
                 return self.__str__()
         def __str__(self):
@@ -12,7 +12,8 @@ class Metrics(object):
                         'max': self.max,
                         'min': self.min,
                         'dev': self.dev,
-                        'mean': self.mean
+                        'mean': self.mean, 
+                        'med': self.med,
                 })
         def getMin(self):
                 return self.min
@@ -22,3 +23,5 @@ class Metrics(object):
                 return self.mean
         def getDev(self):
                 return self.dev
+        def getMed(self):
+                return self.med
