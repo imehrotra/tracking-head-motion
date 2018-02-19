@@ -9,10 +9,17 @@ import math
 import re
 import pickle
 import Metrics as met
+from sklearn import neighbors, datasets, preprocessing
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 
 epsilon = 0.000001
-'''dump_path = path.join('..', 'output')
 
+#global variables for storing training
+Y = []
+Z = []
+
+'''dump_path = path.join('..', 'output')
 def save(data, filename):   
     if not path.exists(dump_path):
         makedirs(dump_path)
@@ -172,6 +179,8 @@ def overall_mean(data,i):
         print "z mean: ", np.mean(dictsZ)
         if i == 0:
                 print "w mean: ", np.mean(dictsW)
+                return(dictsX,dictsY,dictsZ,dictsW)
+        return (dictsX,dictsY,dictsZ)
 def overall_dev(data,i):
         dictsX = []
         dictsY = []
@@ -220,12 +229,45 @@ def overall_min(data,i):
         print "z Min: ", np.mean(dictsZ)
         if i == 0:
                 print "w Max: ", np.mean(dictsW)
+                return(dictsX,dictsY,dictsZ,dictsW)
+        return (dictsX,dictsY,dictsZ)
+def add_train(capture,i):
+        # i is 0 for right tilt
+        # adds the data into the training test set (global variables)
+        for each in capture:
+                for one in each:
+                        tmp = []
+                        tmp.append(one.getMax())
+                        tmp.append(one.getMean())
+                        tmp.append(one.getDev())
+                        tmp.append(one.getMin())
+                        Y.append(tmp)
+                        if i == 0:
+                                Z.append("right tilt")
+                        else:
+                                Z.append("left tilt")
+ 
+def train():
+        '''
+        trains the data and prints the accuracy score
+'''
+ 
+        Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
+        scaler =  preprocessing.StandardScaler().fit(Y_train)
+        Y_test = scaler.transform(Y_test)
+        knn = neighbors.KNeighborsClassifier(n_neighbors=1)
+        knn.fit(Y_train, Z_train)
+        z_pred = knn.predict(Y_test)
+        print accuracy_score(Z_test, z_pred)
+        
+        
 def main():
         parser = argparse.ArgumentParser()
         parser.add_argument('-f','--file',help = 'Specifies a particular input file to test')
         parser.add_argument('-a','--filea',help = 'Specifies a particular attitude file to test')
         parser.add_argument('-fd','--folder',help = 'Specifies a particular folder to test')
         parser.add_argument('-fa','--folderA',help = 'Specifies a particular attitude folder to test')
+        parser.add_argument('-t', '--test', help = 'Trains folders')
         args = parser.parse_args()
         if args.file:
                 txt_path = args.file
@@ -236,7 +278,7 @@ def main():
         if args.folder:
                 txt_path = args.folder
                 dataFrame = folder_accel(txt_path)
-                overall_mean(dataFrame,1)
+                capture = overall_mean(dataFrame,1)
                 overall_dev(dataFrame,1)
                 overall_max(dataFrame,1)
                 overall_min(dataFrame,1)
@@ -246,7 +288,17 @@ def main():
                 overall_mean(dataFrame,0)
                 overall_dev(dataFrame,0)
                 overall_max(dataFrame,0)
-                overall_min(dataFrame,0)
+                capture = overall_min(dataFrame,0)
+        if args.test:
+                dataFrameRotateLU = folder_accel("rotate_lt_u")
+                add_train(dataFrameRotateLU,1)
+                dataFrameRotateLD = folder_accel("rotate_lt_d")
+                add_train(dataFrameRotateLD,1)
+                dataFrameRotateRU = folder_accel("rotate_rt_u")
+                add_train(dataFrameRotateRU,0)
+                dataFrameRotateRD = folder_accel("rotate_rt_d")
+                add_train(dataFrameRotateRD,0)
+                train()
 
 if __name__ == '__main__':
     main()
