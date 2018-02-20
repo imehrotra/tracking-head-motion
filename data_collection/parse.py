@@ -287,7 +287,7 @@ def train():
     '''
     trains the data and prints the accuracy score
 '''
-
+    maxAccurate = 0;
     Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
     scaler =  preprocessing.StandardScaler().fit(Y_train)
     Y_test = scaler.transform(Y_test)
@@ -296,10 +296,14 @@ def train():
         knn.fit(Y_train, Z_train)
         z_pred = knn.predict(Y_test)
         misclassified = Y_test[Z_test != z_pred]
-        print misclassified
-        print accuracy_score(Z_test, z_pred)
-        print confusion_matrix(Z_test, z_pred)
+        print "misclassified ones,", misclassified
+        if accuracy_score(Z_test, z_pred) > maxAccurate:
+            maxAccurate = accuracy_score(Z_test, z_pred)
+            index = n
+        print "accuracy score, ", accuracy_score(Z_test, z_pred)
+        print "confusion_matrix, ", confusion_matrix(Z_test, z_pred)
         #print classification_report(Z_test, z_pred)
+    print "best accuracy: ",maxAccurate," nearest neighbor:", n
 
     
         
