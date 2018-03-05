@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour
 {
 
     public float speed;
+	public int run = 0;
 
     private Rigidbody rb;
 	string path1, path2, path3, path4, path5, path6;
@@ -37,8 +38,8 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-		float moveHorizontal = Input.acceleration.x; //GetAxis("Horizontal");
-		float moveVertical = Input.acceleration.z; //GetAxis("Vertical");
+		float moveHorizontal = Input.acceleration.x;
+		float moveVertical = Input.acceleration.z;
 		Input.gyro.enabled = true;
 		//print("attitude: " + Input.gyro.attitude);
 		//print("rot rate: " + Input.gyro.rotationRateUnbiased);
@@ -47,13 +48,6 @@ public class PlayerController : MonoBehaviour
         Vector3 movement = new Vector3(moveHorizontal, 0.0f, -moveVertical);
 
         rb.AddForce(movement * speed);
-
-		//string path1 = Application.persistentDataPath + "/" + "xaccl.txt".AppendTimeStamp();
-		//string path2 = Application.persistentDataPath + "/" + "yaccl.txt".AppendTimeStamp();
-		//string path3 = Application.persistentDataPath + "/" + "zaccl.txt".AppendTimeStamp();
-		//string path4 = Application.persistentDataPath + "/" + "attitude.txt".AppendTimeStamp();
-		//string path5 = Application.persistentDataPath + "/" + "rotrate.txt".AppendTimeStamp();
-		//string path6 = Application.persistentDataPath + "/" + "userAccl.txt".AppendTimeStamp();
 
 		//Write some text to the txt file
 		StreamWriter writer1 = new StreamWriter(path1, true);
@@ -81,4 +75,14 @@ public class PlayerController : MonoBehaviour
 		writer6.WriteLine(Input.gyro.userAcceleration);
 		writer6.Close();
     }
+
+	void start_button()
+	{
+		run = 1;
+	}
+
+	void stop_button()
+	{
+		run = 0;
+	}
 }
