@@ -10,9 +10,13 @@ import re
 import pickle
 import Metrics as met
 from sklearn import neighbors, datasets, preprocessing
-#from sklearn.model_selection import train_test_split
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
+#from sklearn.cross_validation import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
+from sklearn import tree
+from sklearn.ensemble import ExtraTreesClassifier
 
 epsilon = 0.000001
 
@@ -78,7 +82,7 @@ def accl_txt(filename):
         x = float(structure[2])
         y = float(structure[7])
         z = float(structure[12])
-#                        if (abs(0-x) < epsilon) and (abs(0-y) < epsilon) and (abs(0-z) < epsilon):
+        #if (abs(0-x) < epsilon) and (abs(0-y) < epsilon) and (abs(0-z) < epsilon):
         if 0:
                 continue
         else:
@@ -264,10 +268,10 @@ def add_train(capture,i, s):
         for one in each:
             tmp = []
             tmp.append(one.getMax())
-#            tmp.append(one.getMean())
-#            tmp.append(one.getMed())
+            tmp.append(one.getMean())
+            tmp.append(one.getMed())
             tmp.append(one.getMin())
-#            tmp.append(one.getDev())
+            tmp.append(one.getDev())
 
             Y.append(tmp)
             if i == 0:
@@ -304,6 +308,30 @@ def train():
         print "confusion_matrix, ", confusion_matrix(Z_test, z_pred)
         #print classification_report(Z_test, z_pred)
     print "best accuracy: ",maxAccurate," nearest neighbor:", n
+
+def train2():
+    maxAccurate = 0;
+    Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
+    scaler =  preprocessing.StandardScaler().fit(Y_train)
+    Y_test = scaler.transform(Y_test)
+    knn = tree.DecisionTreeClassifier()
+    knn = knn.fit(Y_train, Z_train)
+    z_pred = knn.predict(Y_test)
+    misclassified = Y_test[Z_test != z_pred]
+    print "misclassified ones,", misclassified
+    if accuracy_score(Z_test, z_pred) > maxAccurate:
+        maxAccurate = accuracy_score(Z_test, z_pred)
+            
+    print "accuracy score, ", accuracy_score(Z_test, z_pred)
+    print "confusion_matrix, ", confusion_matrix(Z_test, z_pred)
+
+    model = ExtraTreesClassifier()
+    model = model.fit(Y_train, Z_train)
+ #   print(Y_train)
+    print "feature importances"
+    print(model.feature_importances_)
+
+    
 
     
         
@@ -346,7 +374,9 @@ def main():
             add_train(dataFrameRotateRD,0, "d")
         #    dataFrameRotateS = folder_accel("rotate_sit")
         #    add_train(dataFrameRotateS,2, "s")
-            train()
+
+           # train()
+            train2()
 
 if __name__ == '__main__':
     main()
