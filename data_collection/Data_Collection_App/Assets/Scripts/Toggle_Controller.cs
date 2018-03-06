@@ -21,24 +21,26 @@ public class Toggle_Controller : MonoBehaviour {
 	string path1, path2, path3, path4, path5, path6;
 	bool running = false;
 
-	public void TaskOnClick() {
-		Debug.Log("You clicked the button");
-		if (running) {
-			running = false;
-		} else {
-			running = true;
-		}
-	}
+	public Text run;
+
+	public Button LU, LD, RU, RD;
+
+	string direction = "lu";
 
 	void Start()
 	{
+		run = GameObject.Find("Running_Text").GetComponent<Text>();
+		LU = GameObject.Find ("Left Up").GetComponent<Button> ();
+		LD = GameObject.Find ("Left Down").GetComponent<Button> ();
+		RU = GameObject.Find ("Right Up").GetComponent<Button> ();
+		RD = GameObject.Find ("Right Down").GetComponent<Button> ();
 
-		path1 = Application.persistentDataPath + "/" + "xaccl.txt".AppendTimeStamp();
-		path2 = Application.persistentDataPath + "/" + "yaccl.txt".AppendTimeStamp();
-		path3 = Application.persistentDataPath + "/" + "zaccl.txt".AppendTimeStamp();
-		path4 = Application.persistentDataPath + "/" + "attitude.txt".AppendTimeStamp();
-		path5 = Application.persistentDataPath + "/" + "rotrate.txt".AppendTimeStamp();
-		path6 = Application.persistentDataPath + "/" + "userAccl.txt".AppendTimeStamp();
+		path1 = Application.persistentDataPath + "/" + direction + "_xaccl.txt".AppendTimeStamp();
+		path2 = Application.persistentDataPath + "/" + direction + "_yaccl.txt".AppendTimeStamp();
+		path3 = Application.persistentDataPath + "/" + direction + "_zaccl.txt".AppendTimeStamp();
+		path4 = Application.persistentDataPath + "/" + direction + "_attitude.txt".AppendTimeStamp();
+		path5 = Application.persistentDataPath + "/" + direction + "_rotrate.txt".AppendTimeStamp();
+		path6 = Application.persistentDataPath + "/" + direction + "_userAccl.txt".AppendTimeStamp();
 	}
 
 
@@ -78,6 +80,17 @@ public class Toggle_Controller : MonoBehaviour {
 			StreamWriter writer6 = new StreamWriter (path6, true);
 			writer6.WriteLine (Input.gyro.userAcceleration);
 			writer6.Close ();
+		}
+	}
+
+	public void TaskOnClick() {
+		Debug.Log("You clicked the button");
+		if (running) {
+			running = false;
+			run.text = "STOPPED";
+		} else {
+			running = true;
+			run.text = "RUNNING";
 		}
 	}
 }
