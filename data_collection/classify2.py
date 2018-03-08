@@ -10,8 +10,8 @@ import re
 import pickle
 import Metrics as met
 from sklearn import neighbors, datasets, preprocessing
-from sklearn.model_selection import train_test_split
-#from sklearn.cross_validation import train_test_split
+#from sklearn.model_selection import train_test_split
+from sklearn.cross_validation import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
@@ -81,11 +81,7 @@ def rot_txt(filename):
     dicts_z = toSingle(dicts,2)
 
     dataX = met.Metrics(in_min=np.min(dicts_x), in_max=np.max(dicts_x), in_mean=np.mean(dicts_x), in_dev=np.std(dicts_x), in_med=np.median(dicts_x))
-
-    #print dataX#        dataY = met.Metrics()
     dataY = met.Metrics(in_min=np.min(dicts_y), in_max=np.max(dicts_y), in_mean=np.mean(dicts_y), in_dev=np.std(dicts_y), in_med=np.median(dicts_y))
-
-    #print dataY
     dataZ = met.Metrics(in_min=np.min(dicts_z), in_max=np.max(dicts_z), in_mean=np.mean(dicts_z), in_dev=np.std(dicts_z), in_med=np.median(dicts_z))
 
         #print dataZ
@@ -102,16 +98,9 @@ def xyz_accl(filename):
             return None
         list_data = []
         for line in f:
-            list_data.append(float(line))
- #   data = met.Metrics()
-#    setattr(data,'mean',np.mean(list_data))
- #   data.max = np.max(list_data)
- #   data.min = np.min(list_data)
- #   data.dev = np.std(list_data)
- #   data.med = np.median(list_data)
- 
+            list_data.append(float(line))    
     data = met.Metrics(in_min=np.min(list_data), in_max=np.max(list_data), in_mean=np.mean(list_data), in_dev=np.std(list_data), in_med=np.median(list_data))
-    return data
+    return (data)
 def attitude_txt(filename):
     '''
     Input: A path to attitude
@@ -142,13 +131,8 @@ def attitude_txt(filename):
     dicts_z = toSingle(dicts,2)
     dicts_w = toSingle(dicts,3)
     dataX = met.Metrics(in_min=np.min(dicts_x), in_max=np.max(dicts_x), in_mean=np.mean(dicts_x), in_dev=np.std(dicts_x), in_med=np.median(dicts_x))
-
-    #print dataX#        dataY = met.Metrics()
     dataY = met.Metrics(in_min=np.min(dicts_y), in_max=np.max(dicts_y), in_mean=np.mean(dicts_y), in_dev=np.std(dicts_y), in_med=np.median(dicts_y))
-
-    #print dataY
     dataZ = met.Metrics(in_min=np.min(dicts_z), in_max=np.max(dicts_z), in_mean=np.mean(dicts_z), in_dev=np.std(dicts_z), in_med=np.median(dicts_z))
-
     dataW = met.Metrics(in_min=np.min(dicts_w), in_max=np.max(dicts_w), in_mean=np.mean(dicts_w), in_dev=np.std(dicts_w), in_med=np.median(dicts_w))
     #print dataZ
     return (dataX,dataY,dataZ,dataW)
@@ -167,8 +151,27 @@ def get_all_types(path):
     label = ""
     for date_key, d in data_dict.items():
         tmp = []
-        
-        for data_type, metric_list in d.items():
+        ### So feature1 =  "att" (4 metrics), 2= "rot" (3 metrics) , 3="uaccl" (3 metrics), 4= "xaccl" (1 metric), 5= "yaccl" (1 metric), 6="zaccl" (1 metric)
+        ### att_x [0-4 features], att_y [5:9], att_z [10:14], att_w [15_19]
+        ### rot_x [20:24],rot_y [25:29], rot_z [30:34]
+        ### uaccl_x [35:39],uaccl_y [40:44], uaccl_z [45:49]
+        ### xAccL: [50:54] 
+
+        ### top ranked features: 54 (xaccl: dev), 50 (uaccl_z dev), 51(xaccl: max), 
+        ### 32 (rot_z med),26 (rot_y mean), 31 (rot_z mean), 34 (rot_z dev)
+
+        ### FOR GETTING TOP FEATURES
+        tmp.append(d["xaccl"].getDev())
+        tmp.append(d["uaccl"][2].getDev())
+        tmp.append(d["xaccl"].getMax())
+        tmp.append(d["rot"][2].getMed())
+        #tmp.append(d["rot"][1].getMean())
+        tmp.append(d["rot"][2].getMean())
+        tmp.append(d["rot"][1].getDev())
+
+        #CODE FOR GETTING ALL FEATURES
+        '''
+        for data_type, metric_list in sorted(d.iteritems()):
             if data_type == "label":
                 label = metric_list #this one isn't actually a metric list 
                 continue
@@ -180,6 +183,8 @@ def get_all_types(path):
  #           print metric_list
  #           print data_dict
            # for metric in metric_list:
+
+            
             try:
                 tmp.append(metric_list.getMax())
                 tmp.append(metric_list.getMean())
@@ -194,11 +199,10 @@ def get_all_types(path):
                     tmp.append(metric.getMed())
                     tmp.append(metric.getMin())
                     tmp.append(metric.getDev())
-               # print "error"
-
+                   # print "error"
+        '''
         Y.append(tmp)
-        Z.append(dict_labels[label])
-    print tmp
+        Z.append(dict_labels[d["label"]])
 
 
 def extract_data(d, filename, path):
@@ -209,8 +213,9 @@ def extract_data(d, filename, path):
     '''
     fullname = os.path.join(path,filename)
     data_type = filename[3]
+    # 5* (1 * 3 + 3*2 + 4) = 65 features 
     if (data_type == "x"):
-        d["xaccl"] = xyz_accl(fullname)
+        d["xaccl"] = xyz_accl(fullname) 
 
     elif (data_type == "y"):
         d["yaccl"] = xyz_accl(fullname)
@@ -242,8 +247,6 @@ def create_dictionary(path):
             data_dict[date] = d
         extract_data(d, filename, path) #Have to implement this
     return data_dict
-#dataframe is a list of Metrics... 
-
 
  
 def train():
@@ -273,24 +276,24 @@ def train2():
     Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
     scaler =  preprocessing.StandardScaler().fit(Y_train)
     Y_test = scaler.transform(Y_test)
-    knn = tree.DecisionTreeClassifier()
-    knn = knn.fit(Y_train, Z_train)
-    z_pred = knn.predict(Y_test)
-    misclassified = Y_test[Z_test != z_pred]
-    print "misclassified ones,", misclassified
-    if accuracy_score(Z_test, z_pred) > maxAccurate:
-        maxAccurate = accuracy_score(Z_test, z_pred)
-            
-    print "accuracy score, ", accuracy_score(Z_test, z_pred)
-    print "confusion_matrix, ", confusion_matrix(Z_test, z_pred)
 
     model = ExtraTreesClassifier()
     model = model.fit(Y_train, Z_train)
  #   print(Y_train)
     print "feature importances"
     print(model.feature_importances_)
-
-    
+    importances = model.feature_importances_
+    indices = np.argsort(importances)[::-1]
+    for f in range(len(Y[0])):
+        print "%d. feature %d (%f)" % (f + 1, indices[f], importances[indices[f]])
+    model = tree.DecisionTreeClassifier()
+    model.fit(Y_train, Z_train)
+    z_pred = model.predict(Y_test)
+    misclassified = Y_test[Z_test != z_pred]
+    print "misclassified ones,", misclassified
+            
+    print "accuracy score, ", accuracy_score(Z_test, z_pred)
+    print "confusion_matrix, ", confusion_matrix(Z_test, z_pred)
 
     
         
@@ -325,8 +328,8 @@ def main():
     if args.test:
             get_all_types("all_data")
 
-           # train()
             train2()
+            train()
 
 if __name__ == '__main__':
     main()
