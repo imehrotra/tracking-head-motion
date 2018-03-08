@@ -10,8 +10,8 @@ import re
 import pickle
 import Metrics as met
 from sklearn import neighbors, datasets, preprocessing
-from sklearn.model_selection import train_test_split
-#from sklearn.cross_validation import train_test_split
+#from sklearn.model_selection import train_test_split
+from sklearn.cross_validation import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
@@ -187,6 +187,9 @@ def get_all_types(path):
     '''
     data_dict = create_dictionary(path)
     action_type = ["bd", "bu", "ns", "fd", "fu", "ld", "lu", "rd", "ru"]
+
+    # Right now, I'm classifying the nods as noisy data. If we want to recognize it, 
+    # we can easily change the label
     dict_labels = {"bd": "noisy", "bu": "noisy", "ns": "noisy", "fd":"noisy", "fu":"noisy", "ld":"left down", "lu":"left up", "rd":"right down", "ru":"right up"}
     label = ""
     for date_key, d in data_dict.items():
@@ -218,25 +221,25 @@ def extract_data(d, filename, path):
     to a dictionary.... at the end we'll have a dictionary of metrics. Each dict value
     is a tuple, with at least one Metric
     '''
-        fullname = os.path.join(path,filename)
-        data_type = filename[3]
-        if (data_type == "x"):
-            d["xaccl"] = xyz_accl(fullname)
+    fullname = os.path.join(path,filename)
+    data_type = filename[3]
+    if (data_type == "x"):
+        d["xaccl"] = xyz_accl(fullname)
 
-        elif (data_type == "y"):
-            d["yaccl"] = xyz_accl(fullname)
+    elif (data_type == "y"):
+        d["yaccl"] = xyz_accl(fullname)
 
-        elif (data_type == "z"):
-            d["zaccl"] = xyz_accl(fullname) 
+    elif (data_type == "z"):
+        d["zaccl"] = xyz_accl(fullname) 
 
-        elif (data_type == "r"):
-            d["rot"] = rot_text(fullname)
+    elif (data_type == "r"):
+        d["rot"] = rot_text(fullname)
 
-        elif (data_type == "a"):            
-            d["att"] = attitude_text(fullname)
-            
-        elif (data_type == "u"):
-            d["uaccl"] = rot_text(fullname) #like rot, user Accl has 3 places...
+    elif (data_type == "a"):            
+        d["att"] = attitude_text(fullname)
+
+    elif (data_type == "u"):
+        d["uaccl"] = rot_text(fullname) #like rot, user Accl has 3 places...
 
 def create_dictionary(path):
     '''
@@ -248,9 +251,9 @@ def create_dictionary(path):
         date = filename[-14: -4]
         d = data_dict.get(date)
         if d is None:
-            d = dict.fromkeys(data_type))
+            d = dict.fromkeys(data_type)
             d["label"] = filename[:2]
-            data[date] = d
+            data_dict[date] = d
         extract_data(d, filename, path) #Have to implement this
     return data_dict
 #dataframe is a list of Metrics... 
