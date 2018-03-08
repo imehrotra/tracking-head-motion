@@ -23,17 +23,17 @@ public class Toggle_Controller : MonoBehaviour {
 
 	public Text run;
 
-	public Button LU, LD, RU, RD;
+//	public Button LU, LD, RU, RD;
 
 	string direction = "lu";
 
 	void Start()
 	{
 		run = GameObject.Find("Running_Text").GetComponent<Text>();
-		LU = GameObject.Find ("Left Up").GetComponent<Button> ();
-		LD = GameObject.Find ("Left Down").GetComponent<Button> ();
-		RU = GameObject.Find ("Right Up").GetComponent<Button> ();
-		RD = GameObject.Find ("Right Down").GetComponent<Button> ();
+//		LU = GameObject.Find ("Left Up").GetComponent<Button> ();
+//		LD = GameObject.Find ("Left Down").GetComponent<Button> ();
+//		RU = GameObject.Find ("Right Up").GetComponent<Button> ();
+//		RD = GameObject.Find ("Right Down").GetComponent<Button> ();
 
 		path1 = Application.persistentDataPath + "/" + direction + "_xaccl.txt".AppendTimeStamp();
 		path2 = Application.persistentDataPath + "/" + direction + "_yaccl.txt".AppendTimeStamp();
