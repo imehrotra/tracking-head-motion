@@ -1,10 +1,10 @@
 class Metrics(object):
-        def __init__(self):
-                self.min = None
-                self.max = None
-                self.dev = None
-                self.mean = None
-                self.med = None
+        def __init__(self, in_min=None, in_max=None, in_dev=None, in_mean=None, in_med=None):
+                self.min = in_min
+                self.max = in_max
+                self.dev = in_dev
+                self.mean = in_mean
+                self.med = in_med
         def __repr__(self):
                 return self.__str__()
         def __str__(self):
