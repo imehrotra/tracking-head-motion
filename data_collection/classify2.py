@@ -79,25 +79,15 @@ def rot_txt(filename):
     dicts_x = toSingle(dicts,0)
     dicts_y = toSingle(dicts,1)
     dicts_z = toSingle(dicts,2)
-    dataX = met.Metrics()
-    setattr(dataX,'mean',np.mean(dicts_x))
-    dataX.max = np.max(dicts_x)
-    dataX.min = np.min(dicts_x)
-    dataX.dev = np.std(dicts_x)
-    dataX.med = np.median(dicts_x)
+
+    dataX = met.Metrics(in_min=np.min(dicts_x), in_max=np.max(dicts_x), in_mean=np.mean(dicts_x), in_dev=np.std(dicts_x), in_med=np.median(dicts_x))
+
     #print dataX#        dataY = met.Metrics()
-    dataY = met.Metrics()
-    dataY.max = np.max(dicts_y)
-    dataY.min = np.min(dicts_y)
-    dataY.dev = np.std(dicts_y)
-    dataY.med = np.median(dicts_y)
+    dataY = met.Metrics(in_min=np.min(dicts_y), in_max=np.max(dicts_y), in_mean=np.mean(dicts_y), in_dev=np.std(dicts_y), in_med=np.median(dicts_y))
+
     #print dataY
-    dataZ = met.Metrics()
-    setattr(dataZ,'mean',np.mean(dicts_z))
-    dataZ.max = np.max(dicts_z)
-    dataZ.min = np.min(dicts_z)
-    dataZ.dev = np.std(dicts_z)
-    dataZ.med = np.median(dicts_z)
+    dataZ = met.Metrics(in_min=np.min(dicts_z), in_max=np.max(dicts_z), in_mean=np.mean(dicts_z), in_dev=np.std(dicts_z), in_med=np.median(dicts_z))
+
         #print dataZ
     #return (dataX,dataZ)
     return (dataX,dataY,dataZ)
@@ -151,33 +141,15 @@ def attitude_txt(filename):
     dicts_y = toSingle(dicts,1)
     dicts_z = toSingle(dicts,2)
     dicts_w = toSingle(dicts,3)
-    dataW = met.Metrics()
-    setattr(dataW,'mean',np.mean(dicts_w))
-    dataW.max = np.max(dicts_w)
-    dataW.min = np.min(dicts_w)
-    dataW.dev = np.std(dicts_w)
-    dataW.med = np.median(dicts_w)
-    #print dataW
-    dataX = met.Metrics()
-    setattr(dataX,'mean',np.mean(dicts_x))
-    dataX.max = np.max(dicts_x)
-    dataX.min = np.min(dicts_x)
-    dataX.dev = np.std(dicts_x)
-    dataX.med = np.median(dicts_x)
-    #print dataX
-    dataY = met.Metrics()
-    setattr(dataY,'mean',np.mean(dicts_y))
-    dataY.max = np.max(dicts_y)
-    dataY.min = np.min(dicts_y)
-    dataY.dev = np.std(dicts_y)
-    dataY.med = np.median(dicts_y)
+    dataX = met.Metrics(in_min=np.min(dicts_x), in_max=np.max(dicts_x), in_mean=np.mean(dicts_x), in_dev=np.std(dicts_x), in_med=np.median(dicts_x))
+
+    #print dataX#        dataY = met.Metrics()
+    dataY = met.Metrics(in_min=np.min(dicts_y), in_max=np.max(dicts_y), in_mean=np.mean(dicts_y), in_dev=np.std(dicts_y), in_med=np.median(dicts_y))
+
     #print dataY
-    dataZ = met.Metrics()
-    setattr(dataZ,'mean',np.mean(dicts_z))
-    dataZ.max = np.max(dicts_z)
-    dataZ.min = np.min(dicts_z)
-    dataZ.dev = np.std(dicts_z)
-    dataZ.med = np.median(dicts_z)
+    dataZ = met.Metrics(in_min=np.min(dicts_z), in_max=np.max(dicts_z), in_mean=np.mean(dicts_z), in_dev=np.std(dicts_z), in_med=np.median(dicts_z))
+
+    dataW = met.Metrics(in_min=np.min(dicts_w), in_max=np.max(dicts_w), in_mean=np.mean(dicts_w), in_dev=np.std(dicts_w), in_med=np.median(dicts_w))
     #print dataZ
     return (dataX,dataY,dataZ,dataW)
 def get_all_types(path):
