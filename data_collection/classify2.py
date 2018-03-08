@@ -10,8 +10,8 @@ import re
 import pickle
 import Metrics as met
 from sklearn import neighbors, datasets, preprocessing
-#from sklearn.model_selection import train_test_split
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
+#from sklearn.cross_validation import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
@@ -102,15 +102,15 @@ def xyz_accl(filename):
             return None
         list_data = []
         for line in f:
-            list_data.append(line)
-    data = met.Metrics()
-    setattr(data,'mean',np.mean(list_data))
-    data.max = np.max(list_data)
-    data.min = np.min(list_data)
-    data.dev = np.std(list_data)
-    data.med = np.median(list_data)
-    #print dataW
-
+            list_data.append(float(line))
+ #   data = met.Metrics()
+#    setattr(data,'mean',np.mean(list_data))
+ #   data.max = np.max(list_data)
+ #   data.min = np.min(list_data)
+ #   data.dev = np.std(list_data)
+ #   data.med = np.median(list_data)
+ 
+    data = met.Metrics(in_min=np.min(list_data), in_max=np.max(list_data), in_mean=np.mean(list_data), in_dev=np.std(list_data), in_med=np.median(list_data))
     return data
 def attitude_txt(filename):
     '''
@@ -158,14 +158,16 @@ def get_all_types(path):
     bd = [[zAccl][yAccl][xAccl][][]p[]]
     '''
     data_dict = create_dictionary(path)
-    action_type = ["bd", "bu", "ns", "fd", "fu", "ld", "lu", "rd", "ru"]
+    
+    action_type = ["bk", "ns", "fd", "ld", "lu", "rd", "ru"]
 
     # Right now, I'm classifying the nods as noisy data. If we want to recognize it, 
     # we can easily change the label
-    dict_labels = {"bd": "noisy", "bu": "noisy", "ns": "noisy", "fd":"noisy", "fu":"noisy", "ld":"left down", "lu":"left up", "rd":"right down", "ru":"right up"}
+    dict_labels = {"bk": "noisy",  "ns": "noisy", "fd":"noisy", "ld":"left down", "lu":"left up", "rd":"right down", "ru":"right up"}
     label = ""
     for date_key, d in data_dict.items():
         tmp = []
+        
         for data_type, metric_list in d.items():
             if data_type == "label":
                 label = metric_list #this one isn't actually a metric list 
@@ -175,16 +177,28 @@ def get_all_types(path):
                 print "no Metrics in data_type "+ data_type +" in date "+ date_key
                 continue
 
-            for metric in metric_list:
-                tmp.append(metric.getMax())
-                tmp.append(metric.getMean())
-                tmp.append(metric.getMed())
-                tmp.append(metric.getMin())
-                tmp.append(metric.getDev())
+ #           print metric_list
+ #           print data_dict
+           # for metric in metric_list:
+            try:
+                tmp.append(metric_list.getMax())
+                tmp.append(metric_list.getMean())
+                tmp.append(metric_list.getMed())
+                tmp.append(metric_list.getMin())
+                tmp.append(metric_list.getDev())
+            except:
+                for metric in metric_list:
+                   # print metric
+                    tmp.append(metric.getMax())
+                    tmp.append(metric.getMean())
+                    tmp.append(metric.getMed())
+                    tmp.append(metric.getMin())
+                    tmp.append(metric.getDev())
+               # print "error"
 
         Y.append(tmp)
         Z.append(dict_labels[label])
-
+    print tmp
 
 
 def extract_data(d, filename, path):
@@ -205,13 +219,13 @@ def extract_data(d, filename, path):
         d["zaccl"] = xyz_accl(fullname) 
 
     elif (data_type == "r"):
-        d["rot"] = rot_text(fullname)
+        d["rot"] = rot_txt(fullname)
 
     elif (data_type == "a"):            
-        d["att"] = attitude_text(fullname)
+        d["att"] = attitude_txt(fullname)
 
     elif (data_type == "u"):
-        d["uaccl"] = rot_text(fullname) #like rot, user Accl has 3 places...
+        d["uaccl"] = rot_txt(fullname) #like rot, user Accl has 3 places...
 
 def create_dictionary(path):
     '''
