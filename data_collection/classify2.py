@@ -147,10 +147,13 @@ def get_all_types(path):
 
     # Right now, I'm classifying the nods as noisy data. If we want to recognize it, 
     # we can easily change the label
+    # alphabetically: left down, left up, noisy  right down, right up
     dict_labels = {"bk": "noisy",  "ns": "noisy", "fd":"noisy", "ld":"left down", "lu":"left up", "rd":"right down", "ru":"right up"}
     label = ""
+    lists_w_labels = []
     for date_key, d in data_dict.items():
         tmp = []
+        ### We can use a different factor chooser?
         ### So feature1 =  "att" (4 metrics), 2= "rot" (3 metrics) , 3="uaccl" (3 metrics), 4= "xaccl" (1 metric), 5= "yaccl" (1 metric), 6="zaccl" (1 metric)
         ### att_x [0-4 features], att_y [5:9], att_z [10:14], att_w [15_19]
         ### rot_x [20:24],rot_y [25:29], rot_z [30:34]
@@ -158,16 +161,36 @@ def get_all_types(path):
         ### xAccL: [50:54] 
 
         ### top ranked features: 54 (xaccl: dev), 50 (uaccl_z dev), 51(xaccl: max), 
-        ### 32 (rot_z med),26 (rot_y mean), 31 (rot_z mean), 34 (rot_z dev)
+        ### 52 (xAccl med),32 (rot_z med),26 (rot_y mean), 31 (rot_z mean), 33 (rot_z min)
+        ### 39 (uaccl_x dev)
 
         ### FOR GETTING TOP FEATURES
+ 
+        # xaccl: dev
         tmp.append(d["xaccl"].getDev())
+
+        # uaccl_z dev
         tmp.append(d["uaccl"][2].getDev())
+
+        # xaccl: max
         tmp.append(d["xaccl"].getMax())
+
+        # rot_z med
         tmp.append(d["rot"][2].getMed())
-        #tmp.append(d["rot"][1].getMean())
+
+        #rot_y mean
+        tmp.append(d["rot"][1].getMean())
+
+        # rot_z mean
         tmp.append(d["rot"][2].getMean())
-        tmp.append(d["rot"][1].getDev())
+
+        # rot_z min
+        tmp.append(d["rot"][2].getMin())
+
+        #uaccl_x dev
+        #tmp.append(d["uaccl"][0].getDev())
+
+
 
         #CODE FOR GETTING ALL FEATURES
         '''
@@ -203,6 +226,9 @@ def get_all_types(path):
         '''
         Y.append(tmp)
         Z.append(dict_labels[d["label"]])
+        #lists_w_labels.append(tmp +[date_key])
+
+   
 
 
 def extract_data(d, filename, path):
@@ -244,6 +270,7 @@ def create_dictionary(path):
         if d is None:
             d = dict.fromkeys(data_type)
             d["label"] = filename[:2]
+            
             data_dict[date] = d
         extract_data(d, filename, path) #Have to implement this
     return data_dict
@@ -255,22 +282,50 @@ def train():
 '''
     maxAccurate = 0;
     Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
-    scaler =  preprocessing.StandardScaler().fit(Y_train)
+    #scaler =  preprocessing.StandardScaler().fit(Y_train)
+    #Y_test = scaler.transform(Y_test)
+    scaler = preprocessing.StandardScaler()
+    Y_train = scaler.fit_transform(Y_train)
     Y_test = scaler.transform(Y_test)
+
     for n in range(1,20):
         knn = neighbors.KNeighborsClassifier(n_neighbors=n)
         knn.fit(Y_train, Z_train)
         z_pred = knn.predict(Y_test)
-        misclassified = Y_test[Z_test != z_pred]
-        print "misclassified ones,", misclassified
+        #misclassified = Y_test[Z_test != z_pred]
+        #print "misclassified ones,", misclassified
         if accuracy_score(Z_test, z_pred) > maxAccurate:
             maxAccurate = accuracy_score(Z_test, z_pred)
             index = n
         print "accuracy score, ", accuracy_score(Z_test, z_pred)
-        print "confusion_matrix, ", confusion_matrix(Z_test, z_pred)
-        #print classification_report(Z_test, z_pred)
-    print "best accuracy: ",maxAccurate," nearest neighbor:", n
+        print "confusion_matrix, "
+        print confusion_matrix(Z_test, z_pred)
 
+        #print classification_report(Z_test, z_pred)
+    print "best accuracy: ",maxAccurate," nearest neighbor:", index
+
+'''
+def find_misclassified(arr, lists_w_labels):
+    
+    #Input: array of arrays that have
+    #go through dictionary to find misclassified files
+    
+
+    for a in arr:
+        print "finding: "
+        print a
+        for l in lists_w_labels:
+            date = l[-1]
+            metrics = l[:-1]
+            found = True
+            for index, el in enumerate(a):
+                if round(el, 5) != round(metrics[index], 5):
+                    found = False
+            if found:
+                print "misclassified: "+ date 
+
+        ### for each misclassified, 
+'''
 def train2():
     maxAccurate = 0;
     Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
@@ -295,7 +350,6 @@ def train2():
     print "accuracy score, ", accuracy_score(Z_test, z_pred)
     print "confusion_matrix, ", confusion_matrix(Z_test, z_pred)
 
-    
         
 def main():
     parser = argparse.ArgumentParser()
@@ -328,7 +382,7 @@ def main():
     if args.test:
             get_all_types("all_data")
 
-            train2()
+            #train2()
             train()
 
 if __name__ == '__main__':
