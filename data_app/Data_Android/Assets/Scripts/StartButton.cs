@@ -22,12 +22,15 @@ public class StartButton : MonoBehaviour {
 	bool running = false;
 
 	public Text run;
+	public Text counter;
 	string direction = "lu";
+//	int cnt = 0;
 //	string prevdir = direction;
 
 	void Start()
 	{
 		run = GameObject.Find("RunningText").GetComponent<Text>();
+		counter = GameObject.Find("Counter").GetComponent<Text>();
 
 		path1 = Application.persistentDataPath + "/" + direction + "_xaccl.txt".AppendTimeStamp();
 		path2 = Application.persistentDataPath + "/" + direction + "_yaccl.txt".AppendTimeStamp();
@@ -128,6 +131,11 @@ public class StartButton : MonoBehaviour {
 		} else {
 			running = true;
 			run.text = "RUNNING";
+
+			int cnt = Int32.Parse(counter.text);
+			cnt++;
+			counter.text = cnt.ToString ();
+
 			NewPath ();
 		}
 	}
