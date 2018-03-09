@@ -4,14 +4,26 @@ import time
 #from pynput.mouse import Button, Controller
 #from pynput.keyboard import Key, Controller
 from pynput import mouse, keyboard
-
+import classify
+from sklearn import neighbors, datasets, preprocessing
+from sklearn.model_selection import train_test_split
+#from sklearn.cross_validation import train_test_split
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
+import Metrics as met
 '''
 Presses right arrow key
 '''
-def keyPress():
+def keyPressR():
     keyB = keyboard.Controller()
     keyB.press(keyboard.Key.right)
     keyB.release(keyboard.Key.right)
+
+def keyPressL():
+    keyB = keyboard.Controller()
+    keyB.press(keyboard.Key.left)
+    keyB.release(keyboard.Key.left)
 
 '''
 input x and y coordinates on screen to click
@@ -36,15 +48,38 @@ def mouseMove(x,y):
     cursor.position = (x,y)
 
 def threadAPI(conn, clientaddr, x, y):
-
+    knn = classify2.classify()
     while 1:
     # request from the client
-        data = conn.recv(999999)   
-    # ADD: HOW to Parse request?
-    # ADD: test = Function call to test data?
-        if test:
-            mouseMove(x,y)
-            keyPress()
+        data = conn.recv(999999)
+        with open("attitude.txt", "w") as text_file:
+            text_file.write(data)
+        (dataX,dataY,dataZ,dataW) = classify2.attitude_txt("attitude.txt","")
+        data = conn.recv(999999)
+        with open("xaccel.txt", "w") as text2:
+            text2.write(data)
+        (xaccel) = xyz_accl("xaccel.txt")
+        data = conn.recv(999999)
+        with open("uaccel.txt", "w") as text2:
+            text2.write(data)
+        (uaccel) = xyz_accl("uaccel.txt")
+        tmp = []
+        tmp.append(xaccl.getDev())
+        tmp.append(uaccel.getDev())
+        tmp.append(xaccl.getMax())
+        tmp.append(dataZ.getMed())
+        tmp.append(dataY.getMean())
+        tmp.append(dataZ.getMean())
+        tmp.append(dataZ.getMin())
+        Features = []
+        Features.append(tmp)
+        test = knn.predict(tmp)
+        
+        if test: == 'right':
+  #          mouseMove(x,y)
+            keyPressR()
+        else if test = 'left':
+            keyPressL()
         else:
             continue
     

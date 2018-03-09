@@ -10,8 +10,8 @@ import re
 import pickle
 import Metrics as met
 from sklearn import neighbors, datasets, preprocessing
-#from sklearn.model_selection import train_test_split
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
+#from sklearn.cross_validation import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
@@ -228,7 +228,60 @@ def get_all_types(path):
         Z.append(dict_labels[d["label"]])
         #lists_w_labels.append(tmp +[date_key])
 
-   
+
+'''
+parse test trial
+'''
+def convert(file,path):
+    '''
+    Given folder, will extract arrays for each type of data.
+    bd = [[zAccl][yAccl][xAccl][][]p[]]
+    '''
+    data_dict = to_dictionary(file,path)
+    
+    action_type = ["bk", "ns", "fd", "ld", "lu", "rd", "ru"]
+
+    # Right now, I'm classifying the nods as noisy data. If we want to recognize it, 
+    # we can easily change the label
+    # alphabetically: left down, left up, noisy  right down, right up
+    dict_labels = {"bk": "noisy",  "ns": "noisy", "fd":"noisy", "ld":"left down", "lu":"left up", "rd":"right down", "ru":"right up"}
+    label = ""
+    YVals = []
+    ZVals = []
+    
+    for date_key, d in data_dict.items():
+        tmp = []
+        
+        ### FOR GETTING TOP FEATURES
+ 
+        # xaccl: dev
+        tmp.append(d["xaccl"].getDev())
+
+        # uaccl_z dev
+        tmp.append(d["uaccl"][2].getDev())
+
+        # xaccl: max
+        tmp.append(d["xaccl"].getMax())
+
+        # rot_z med
+        tmp.append(d["rot"][2].getMed())
+
+        #rot_y mean
+        tmp.append(d["rot"][1].getMean())
+
+        # rot_z mean
+        tmp.append(d["rot"][2].getMean())
+
+        # rot_z min
+        tmp.append(d["rot"][2].getMin())
+
+        #uaccl_x dev
+        #tmp.append(d["uaccl"][0].getDev())
+
+        YVals.append(tmp)
+        ZVals.append(dict_labels[d["label"]])
+        #lists_w_labels.append(tmp +[date_key])
+        return(YVals,ZVals)
 
 
 def extract_data(d, filename, path):
@@ -258,6 +311,7 @@ def extract_data(d, filename, path):
     elif (data_type == "u"):
         d["uaccl"] = rot_txt(fullname) #like rot, user Accl has 3 places...
 
+
 def create_dictionary(path):
     '''
     {"DATE": {"label": ACTION_LABEL, "rot": [], "xaccl": [], "yaccl": [], "zAccl": [], "attitude": [], "uAccl: []"}}
@@ -273,6 +327,21 @@ def create_dictionary(path):
             
             data_dict[date] = d
         extract_data(d, filename, path) #Have to implement this
+    return data_dict
+
+def to_dictionary(filename,path):
+   
+    data_type = ["label", "rot", "xaccl", "yaccl", "zaccl", "att", "uaccl"]
+    data_dict = {}
+
+    date = filename[-14: -4]
+    d = data_dict.get(date)
+    if d is None:
+        d = dict.fromkeys(data_type)
+        d["label"] = filename[:2]
+            
+        data_dict[date] = d
+    extract_data(d, filename, path) #Have to implement this
     return data_dict
 
  
@@ -349,6 +418,32 @@ def train2():
             
     print "accuracy score, ", accuracy_score(Z_test, z_pred)
     print "confusion_matrix, ", confusion_matrix(Z_test, z_pred)
+    return model
+
+
+def classify(YVals,ZVals):
+    '''
+    trains the data and prints the accuracy score
+'''
+    maxAccurate = 0;
+    Y_train, Y_test, Z_train, Z_test = train_test_split(YVals,ZVals,random_state = 0)
+    #scaler =  preprocessing.StandardScaler().fit(Y_train)
+    #Y_test = scaler.transform(Y_test)
+    scaler = preprocessing.StandardScaler()
+    Y_train = scaler.fit_transform(Y_train)
+    Y_test = scaler.transform(Y_test)
+
+    
+    knn = neighbors.KNeighborsClassifier(n_neighbors=1)
+    knn.fit(Y_train, Z_train)
+    z_pred = knn.predict(Y_test)
+        #misclassified = Y_test[Z_test != z_pred]
+        #print "misclassified ones,", misclassified
+    print "accuracy score, ", accuracy_score(Z_test, z_pred)
+    print "confusion_matrix, "
+    print confusion_matrix(Z_test, z_pred)
+    return knn
+        #print classification_report(Z_test, z_pred)
 
         
 def main():
@@ -382,7 +477,7 @@ def main():
     if args.test:
             get_all_types("all_data")
 
-            #train2()
+#            train2()
             train()
 
 if __name__ == '__main__':
