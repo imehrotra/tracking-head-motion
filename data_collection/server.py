@@ -4,7 +4,7 @@ import time
 #from pynput.mouse import Button, Controller
 #from pynput.keyboard import Key, Controller
 from pynput import mouse, keyboard
-import classify
+import classify2
 from sklearn import neighbors, datasets, preprocessing
 from sklearn.model_selection import train_test_split
 #from sklearn.cross_validation import train_test_split
@@ -94,11 +94,11 @@ def threadAPI(conn, clientaddr, x, y):
             test = knn.predict(Features)
         else:
             test2 = knn.predict(Features)              
-        if test == 'rd' && test2 == 'ru':
+        if test == 'rd' and test2 == 'ru':
             keyPressR()
             print "right"
             test = 0
-        else if test = 'ld'&& test2 = 'lu':
+        elif test == 'ld' and test2 == 'lu':
             keyPressL()
             print "left"
             test == 0
