@@ -3,6 +3,9 @@ using UnityEngine.UI;
 using System;
 using System.Collections;
 using System.IO;
+using System.Net.Sockets;
+using System.Text;
+
 
 public static class MyExtensions
 {
@@ -24,8 +27,19 @@ public class StartButton : MonoBehaviour {
 	public Text run;
 	public Text counter;
 	string direction = "lu";
-//	int cnt = 0;
-//	string prevdir = direction;
+
+
+	// network vars
+	public String host = "localhost";
+	public Int32 port = 50000;
+
+	internal Boolean socket_ready = false;
+	internal String input_buffer = "";
+	TcpClient tcp_socket;
+	NetworkStream net_stream;
+
+	StreamWriter socket_writer;
+	StreamReader socket_reader;
 
 	void Start()
 	{
@@ -52,7 +66,7 @@ public class StartButton : MonoBehaviour {
 	void Update()
 	{
 		var toggleGroup = GameObject.Find("Canvas").GetComponent<ToggleGroup>();
-//		prevdir = direction;
+
 		foreach (Toggle t in toggleGroup.ActiveToggles()) {
 			if (t.isOn == true) {
 				switch (t.name) {
@@ -81,32 +95,63 @@ public class StartButton : MonoBehaviour {
 					direction = "lu";
 					break;
 				}
-				Debug.Log (t.name);
-//				if (prevdir != direction) {
-//					NewPath ();
-//				}
+//				Debug.Log (t.name);
 				break;
 			}
 		}
 
-		float moveHorizontal = Input.acceleration.x;
-		float moveVertical = Input.acceleration.z;
+		float xaccl = Input.acceleration.x;
+		float yaccl = Input.acceleration.y;
+		float zaccl = Input.acceleration.z;
 		Input.gyro.enabled = true;
 
-		//		Debug.Log (running);
+
+
+		string received_data = readSocket();
+		if (received_data != "")
+		{
+			// Do something with the received data,
+			// print it in the log for now
+			Debug.Log(received_data);
+		}
+
+		// TODO put data in buffer
+		input_buffer = Input.gyro.rotationRateUnbiased.y.ToString() + ",";
+		input_buffer += Input.gyro.rotationRateUnbiased.z.ToString () + ",";
+		input_buffer += Input.gyro.userAcceleration.z.ToString () + ",";
+		input_buffer += xaccl.ToString() + ",";
+		input_buffer += DateTime.Now.ToString("MMddHHmmss") + ",";
+//		Debug.Log (Input.gyro.rotationRateUnbiased.y);
+//		Debug.Log (Input.gyro.rotationRateUnbiased.z);
+//		Debug.Log (Input.gyro.userAcceleration.z);
+//		Debug.Log (xaccl);
+
+//		ASCIIEncoding ascii = new ASCIIEncoding();
+//		Debug.Log("Byte Count:" + ascii.GetByteCount(input_buffer));
+
+//		// Send the buffer, clean it
+//		Debug.Log("Sending: " + input_buffer);
+//		writeSocket(input_buffer);
+//		input_buffer = "";
+
+
+		// if running, write data to txt files
 		if (running) {
-			//Write some text to the txt file
+
+			// Send the buffer, clean it
+//			Debug.Log("Sending: " + input_buffer);
+			writeSocket(input_buffer);
+
 			StreamWriter writer1 = new StreamWriter (path1, true);
-			writer1.WriteLine (moveHorizontal);
+			writer1.WriteLine (xaccl);
 			writer1.Close ();
 
-			float yaccl = Input.acceleration.y;
 			StreamWriter writer2 = new StreamWriter (path2, true);
 			writer2.WriteLine (yaccl);
 			writer2.Close ();
 
 			StreamWriter writer3 = new StreamWriter (path3, true);
-			writer3.WriteLine (moveVertical);
+			writer3.WriteLine (zaccl);
 			writer3.Close ();
 
 			StreamWriter writer4 = new StreamWriter (path4, true);
@@ -121,6 +166,8 @@ public class StartButton : MonoBehaviour {
 			writer6.WriteLine (Input.gyro.userAcceleration);
 			writer6.Close ();
 		}
+
+		input_buffer = "";
 	}
 
 	public void TaskOnClick() {
@@ -139,5 +186,69 @@ public class StartButton : MonoBehaviour {
 			NewPath ();
 		}
 	}
-		
+
+
+
+	void Awake()
+	{
+		setupSocket();
+	}
+
+	void OnApplicationQuit()
+	{
+		closeSocket();
+	}
+
+	public void setupSocket()
+	{
+		try
+		{
+			tcp_socket = new TcpClient(host, port);
+
+			net_stream = tcp_socket.GetStream();
+			socket_writer = new StreamWriter(net_stream);
+			socket_reader = new StreamReader(net_stream);
+
+			socket_ready = true;
+		}
+		catch (Exception e)
+		{
+			// Something went wrong
+			Debug.Log("Socket error: " + e);
+		}
+	}
+
+	public void writeSocket(string line)
+	{
+		if (!socket_ready)
+			return;
+
+		line = line + "\r\n";
+		socket_writer.Write(line);
+		socket_writer.Flush();
+	}
+
+	public String readSocket()
+	{
+		if (!socket_ready)
+			return "";
+
+		if (net_stream.DataAvailable)
+			return socket_reader.ReadLine();
+
+		return "";
+	}
+
+	public void closeSocket()
+	{
+		if (!socket_ready)
+			return;
+
+		socket_writer.Close();
+		socket_reader.Close();
+		tcp_socket.Close();
+		socket_ready = false;
+	}
+
+
 }

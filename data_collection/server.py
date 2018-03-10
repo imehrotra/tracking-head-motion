@@ -3,7 +3,7 @@ import socket,os,sys,thread,argparse,threading
 import time
 #from pynput.mouse import Button, Controller
 #from pynput.keyboard import Key, Controller
-from pynput import mouse, keyboard
+# from pynput import mouse, keyboard
 import classify2
 from sklearn import neighbors, datasets, preprocessing
 from sklearn.model_selection import train_test_split
@@ -14,6 +14,7 @@ from sklearn.feature_selection import chi2
 import Metrics as met
 import csv
 import numpy as np
+
 '''
 Presses right arrow key
 '''
@@ -51,58 +52,90 @@ def mouseMove(x,y):
 
 
 def threadAPI(conn, clientaddr, x, y):
-    knn = classify2.classify()
+
+    knn, scaler = classify2.classify()
     count = 0
     test = 0
     test2 = 0
     while 1:
-        with open("recv.txt","w") as file:
-            while count <= 50:
+        # with open("recv.txt","w") as file:
+        count = 0
+        roty = []
+        rotz = []
+        uaccelz = []
+        xaccl = []
+        cur_roty = []
+        cur_rotz = []
+        cur_uaccelz = []
+        cur_xaccl = []
+        while count <= 50:
     # request from the client
-                data = conn.recv(999999)
-                file.write(data)
-                count+=1
+            data = conn.recv(999999)
+                # file.write(data)
+            count+=1
             
         #open file
-        count = 0
-        with open("recv.txt","r") as file:
-            roty = []
-            rotz = []
-            uaccelz = []
-            xaccl = []
-            for row in file:
-                line = row.split(",")
-                roty.append(line[0])
-                rotz.append(line[1])
-                uaccelz.append(line[2])
-                xaccl.append(line[3])
-            roty = np.array(roty)
-            rotz = np.array(roz)
-            uaccelz = np.array(uaccelz)
-            xaccl = np.array(xaccl)
+        # count = 0
+        # with open("recv.txt","r") as file:
+            # roty = []
+            # rotz = []
+            # uaccelz = []
+            # xaccl = []
+            #for row in file:
+            #    if row == '\n':
+            #        continue
+            #    line = row.split(",")
+            #    roty.append(float(line[0]))
+            #    rotz.append(float(line[1]))
+            #    uaccelz.append(float(line[2]))
+            #    xaccl.append(float(line[3]))
+            if data == '\n':
+                continue
+            line = data.split(",")
+            roty.append(float(line[0]))
+            rotz.append(float(line[1]))
+            uaccelz.append(float(line[2]))
+            xaccl.append(float(line[3]))
+            print("Data Time: " + line[4])
+            print("Curr Time: ", time.time())
+        roty = np.array(roty)
+        rotz = np.array(rotz)
+        uaccelz = np.array(uaccelz)
+        xaccl = np.array(xaccl)
         tmp = []
-        tmp.append(xaccl.getDev())
-        tmp.append(uaccelz.getDev())
-        tmp.append(xaccl.getMax())
-        tmp.append(roty.getMed())
-        tmp.append(roty.getMean())
-        tmp.append(rotz.getMean())
-        tmp.append(rotz.getMin())
+        tmp.append(xaccl.std())
+        tmp.append(uaccelz.std())
+        tmp.append(xaccl.max())
+        tmp.append(np.median(roty))
+        tmp.append(roty.mean())
+        tmp.append(rotz.mean())
+        tmp.append(rotz.min())
         Features = []
         Features.append(tmp)
+        print "features", Features
         if test == 0:
+            scaler.transform(Features)
             test = knn.predict(Features)
         else:
             test2 = knn.predict(Features)              
-        if test == 'rd' and test2 == 'ru':
-            keyPressR()
+        if test == 'right down' and test2 == 'right up':
+            # keyPressR()
             print "right"
             test = 0
-        elif test == 'ld' and test2 == 'lu':
-            keyPressL()
+        elif test == 'left down' and test2 == 'left up':
+            # keyPressL()
             print "left"
-            test == 0
+            test = 0
+        elif test2 == 'right down':
+            print "start right down"
+            test = test2
+        elif test2 == 'left down':
+            print "start left down"
+            test = test2
         else:
+            print("test:", test)
+            print("test2:", test2)
+            print "noisy"
             continue
     
     conn.close()

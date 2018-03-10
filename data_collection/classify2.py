@@ -448,7 +448,7 @@ def classify():
     print "accuracy score, ", accuracy_score(Z_test, z_pred)
     print "confusion_matrix, "
     print confusion_matrix(Z_test, z_pred)
-    return knn
+    return knn, scaler
         #print classification_report(Z_test, z_pred)
 
         

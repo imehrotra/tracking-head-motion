@@ -8,7 +8,7 @@ using System.Net.Sockets;
 
 public class networkSocket : MonoBehaviour
 {
-    public String host = "localhost";
+	public String host = "localhost";//"10.150.183.177";
     public Int32 port = 50000;
 
     internal Boolean socket_ready = false;
