@@ -10,8 +10,8 @@ import re
 import pickle
 import Metrics as met
 from sklearn import neighbors, datasets, preprocessing
-from sklearn.model_selection import train_test_split
-#from sklearn.cross_validation import train_test_split
+#from sklearn.model_selection import train_test_split
+from sklearn.cross_validation import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
@@ -166,26 +166,32 @@ def get_all_types(path):
 
         ### FOR GETTING TOP FEATURES
  
-        # xaccl: dev
-        tmp.append(d["xaccl"].getDev())
+        if (d["xaccl"] is not None) and (d["uaccl"] is not None) and (d["rot"] is not None):
+            # xaccl: dev
+            tmp.append(d["xaccl"].getDev())
 
-        # uaccl_z dev
-        tmp.append(d["uaccl"][2].getDev())
+            # uaccl_z dev
+            tmp.append(d["uaccl"][2].getDev())
 
-        # xaccl: max
-        tmp.append(d["xaccl"].getMax())
+            # xaccl: max
+            tmp.append(d["xaccl"].getMax())
 
-        # rot_z med
-        tmp.append(d["rot"][2].getMed())
+            # rot_z med
+            tmp.append(d["rot"][2].getMed())
 
-        #rot_y mean
-        tmp.append(d["rot"][1].getMean())
+            #rot_y mean
+            tmp.append(d["rot"][1].getMean())
 
-        # rot_z mean
-        tmp.append(d["rot"][2].getMean())
+            # rot_z mean
+            tmp.append(d["rot"][2].getMean())
 
-        # rot_z min
-        tmp.append(d["rot"][2].getMin())
+            # rot_z min
+            tmp.append(d["rot"][2].getMin())
+            Y.append(tmp)
+            Z.append(dict_labels[d["label"]])
+        else:
+            print date_key
+
 
         #uaccl_x dev
         #tmp.append(d["uaccl"][0].getDev())
@@ -224,8 +230,7 @@ def get_all_types(path):
                     tmp.append(metric.getDev())
                    # print "error"
         '''
-        Y.append(tmp)
-        Z.append(dict_labels[d["label"]])
+
         #lists_w_labels.append(tmp +[date_key])
 
 
