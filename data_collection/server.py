@@ -12,6 +12,8 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 import Metrics as met
+import csv
+import numpy as np
 '''
 Presses right arrow key
 '''
@@ -47,39 +49,59 @@ def mouseMove(x,y):
     # Set pointer position
     cursor.position = (x,y)
 
+
 def threadAPI(conn, clientaddr, x, y):
     knn = classify2.classify()
+    count = 0
+    test = 0
+    test2 = 0
     while 1:
+        with open("recv.txt","w") as file:
+            while count <= 50:
     # request from the client
-        data = conn.recv(999999)
-        with open("attitude.txt", "w") as text_file:
-            text_file.write(data)
-        (dataX,dataY,dataZ,dataW) = classify2.attitude_txt("attitude.txt","")
-        data = conn.recv(999999)
-        with open("xaccel.txt", "w") as text2:
-            text2.write(data)
-        (xaccel) = xyz_accl("xaccel.txt")
-        data = conn.recv(999999)
-        with open("uaccel.txt", "w") as text2:
-            text2.write(data)
-        (uaccel) = xyz_accl("uaccel.txt")
+                data = conn.recv(999999)
+                file.write(data)
+                count+=1
+            
+        #open file
+        count = 0
+        with open("recv.txt","r") as file:
+            roty = []
+            rotz = []
+            uaccelz = []
+            xaccl = []
+            for row in file:
+                line = row.split(",")
+                roty.append(line[0])
+                rotz.append(line[1])
+                uaccelz.append(line[2])
+                xaccl.append(line[3])
+            roty = np.array(roty)
+            rotz = np.array(roz)
+            uaccelz = np.array(uaccelz)
+            xaccl = np.array(xaccl)
         tmp = []
         tmp.append(xaccl.getDev())
-        tmp.append(uaccel.getDev())
+        tmp.append(uaccelz.getDev())
         tmp.append(xaccl.getMax())
-        tmp.append(dataZ.getMed())
-        tmp.append(dataY.getMean())
-        tmp.append(dataZ.getMean())
-        tmp.append(dataZ.getMin())
+        tmp.append(roty.getMed())
+        tmp.append(roty.getMean())
+        tmp.append(rotz.getMean())
+        tmp.append(rotz.getMin())
         Features = []
         Features.append(tmp)
-        test = knn.predict(tmp)
-        
-        if test: == 'right':
-  #          mouseMove(x,y)
+        if test == 0:
+            test = knn.predict(Features)
+        else:
+            test2 = knn.predict(Features)              
+        if test == 'rd' && test2 == 'ru':
             keyPressR()
-        else if test = 'left':
+            print "right"
+            test = 0
+        else if test = 'ld'&& test2 = 'lu':
             keyPressL()
+            print "left"
+            test == 0
         else:
             continue
     
