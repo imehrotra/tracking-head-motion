@@ -426,12 +426,13 @@ def train2():
     return model
 
 
-def classify(YVals,ZVals):
+def classify():
     '''
     trains the data and prints the accuracy score
 '''
+    get_all_types("all_data")
     maxAccurate = 0;
-    Y_train, Y_test, Z_train, Z_test = train_test_split(YVals,ZVals,random_state = 0)
+    Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
     #scaler =  preprocessing.StandardScaler().fit(Y_train)
     #Y_test = scaler.transform(Y_test)
     scaler = preprocessing.StandardScaler()
