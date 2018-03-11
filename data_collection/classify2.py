@@ -8,10 +8,11 @@ import argparse
 import math
 import re
 import pickle
+import window
 import Metrics as met
 from sklearn import neighbors, datasets, preprocessing
-from sklearn.model_selection import train_test_split
-#from sklearn.cross_validation import train_test_split
+#from sklearn.model_selection import train_test_split
+from sklearn.cross_validation import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
@@ -19,12 +20,11 @@ from sklearn import tree
 from sklearn.ensemble import ExtraTreesClassifier
 
 #recognifure as necessary
-dump_path = '/Users/Wendy/Desktop/Mobile Computing/tracking-head-motion/data_collection/'
+dump_path = ""#'data_collection/'
 epsilon = 0.000001
 
 #global variables for storing training
-Y = []
-Z = []
+
 
 from itertools import izip_longest
 
@@ -78,7 +78,9 @@ def rot_txt(filename):
     if not ".txt" in filename:
       print(filename + " not a txt file")
       return None
-    dicts = []
+    dicts_x = []
+    dicts_y = []
+    dicts_z = []
     for line in f:
         structure = re.split('([(]?)(.*?)([)]?)(,|$)',line)
         list1 = []
@@ -89,14 +91,17 @@ def rot_txt(filename):
         if 0:
                 continue
         else:
-                list1.append(float(structure[2]))
-                list1.append(float(structure[7]))
-                list1.append(float(structure[12]))
-                dicts.append(list1)
-    dicts = np.array([np.array(xi) for xi in dicts])
-    dicts_x = toSingle(dicts,0)
-    dicts_y = toSingle(dicts,1)
-    dicts_z = toSingle(dicts,2)
+            dicts_x.append(x)
+            dicts_y.append(y)
+            dicts_z.append(z)
+    if filename[:2] != "bk" and filename[:2] != "ns":
+        if len(dicts_x)>100:
+            return None
+        if len(dicts_x)>80:
+            dicts_x = dicts_x[20:-5]
+            dicts_y = dicts_y[20:-5]
+            dicts_z = dicts_z[20:-5]
+
 
     dataX = met.Metrics(in_min=np.min(dicts_x), in_max=np.max(dicts_x), in_mean=np.mean(dicts_x), in_dev=np.std(dicts_x), in_med=np.median(dicts_x))
     dataY = met.Metrics(in_min=np.min(dicts_y), in_max=np.max(dicts_y), in_mean=np.mean(dicts_y), in_dev=np.std(dicts_y), in_med=np.median(dicts_y))
@@ -116,9 +121,17 @@ def xyz_accl(filename):
             return None
         list_data = []
         for line in f:
-            list_data.append(float(line))    
+            list_data.append(float(line))   
+
+    if filename[:2] != "bk" and filename[:2] != "ns":
+        if len(list_data)>100:
+            return None
+        if len(list_data)>80:        
+            list_data = list_data[20:-5]
+
     data = met.Metrics(in_min=np.min(list_data), in_max=np.max(list_data), in_mean=np.mean(list_data), in_dev=np.std(list_data), in_med=np.median(list_data))
     return (data)
+
 def attitude_txt(filename):
     '''
     Input: A path to attitude
@@ -128,33 +141,38 @@ def attitude_txt(filename):
         if not ".txt" in filename:
             print(filename + " not a txt file")
             return None
-        dicts = []
+        dicts_x = []
+        dicts_y = []
+        dicts_z = []
+        dicts_w = []
+
         for line in f:
             structure = re.split('([(]?)(.*?)([)]?)(,|$)',line)
-            list1 = []
             x = float(structure[2])
             y = float(structure[7])
-            z = float(structure[12])
-            #if (abs(0-x) < epsilon) and (abs(0-y) < epsilon) and (abs(0-z) < epsilon):
-        #                               continue
-        #                       else:
-            list1.append(float(structure[2]))
-            list1.append(float(structure[7]))
-            list1.append(float(structure[12]))
-            list1.append(float(structure[17]))
-            dicts.append(list1)
-    dicts = np.array([np.array(xi) for xi in dicts])
-    dicts_x = toSingle(dicts,0)
-    dicts_y = toSingle(dicts,1)
-    dicts_z = toSingle(dicts,2)
-    dicts_w = toSingle(dicts,3)
+            z = float(structure[12]) 
+            w = float(structure[17])
+            dicts_x.append(x)
+            dicts_y.append(y)
+            dicts_z.append(z)
+            dicts_w.append(w)
+
+    if filename[:2] != "bk" and filename[:2] != "ns":
+        if len(dicts_x)>100:
+            return None
+        if len(dicts_x)>80:
+            dicts_x = dicts_x[20:-5]
+            dicts_y = dicts_y[20:-5]
+            dicts_z = dicts_z[20:-5]
+            dicts_w = dicts_w[20:-5]
+
     dataX = met.Metrics(in_min=np.min(dicts_x), in_max=np.max(dicts_x), in_mean=np.mean(dicts_x), in_dev=np.std(dicts_x), in_med=np.median(dicts_x))
     dataY = met.Metrics(in_min=np.min(dicts_y), in_max=np.max(dicts_y), in_mean=np.mean(dicts_y), in_dev=np.std(dicts_y), in_med=np.median(dicts_y))
     dataZ = met.Metrics(in_min=np.min(dicts_z), in_max=np.max(dicts_z), in_mean=np.mean(dicts_z), in_dev=np.std(dicts_z), in_med=np.median(dicts_z))
     dataW = met.Metrics(in_min=np.min(dicts_w), in_max=np.max(dicts_w), in_mean=np.mean(dicts_w), in_dev=np.std(dicts_w), in_med=np.median(dicts_w))
     #print dataZ
     return (dataX,dataY,dataZ,dataW)
-def get_all_types(path):
+def get_all_types(Y, Z, path):
     '''
     Given folder, will extract arrays for each type of data.
     bd = [[zAccl][yAccl][xAccl][][]p[]]
@@ -207,8 +225,10 @@ def get_all_types(path):
             tmp.append(d["rot"][2].getMin())
             Y.append(tmp)
             Z.append(dict_labels[d["label"]])
-        else:
-            print date_key
+
+        #else:
+            
+            #print date_key
 
 
         #uaccl_x dev
@@ -250,7 +270,7 @@ def get_all_types(path):
         '''
 
         #lists_w_labels.append(tmp +[date_key])
-
+    return Y, Z
 
 '''
 parse test trial
@@ -347,15 +367,16 @@ def create_dictionary(path):
         if d is None:
             d = dict.fromkeys(data_type)
             d["label"] = filename[:2]
-            
             data_dict[date] = d
         extract_data(d, filename, path) #Have to implement this
+
+    print "create dictionary"
+
     return data_dict
 
 def to_dictionary(filename,path):
    
     data_type = ["label", "rot", "xaccl", "yaccl", "zaccl", "att", "uaccl"]
-    data_dict = {}
 
     date = filename[-14: -4]
     d = data_dict.get(date)
@@ -368,14 +389,12 @@ def to_dictionary(filename,path):
     return data_dict
 
  
-def train():
+def train(Y, Z):
     '''
     trains the data and prints the accuracy score
 '''
     maxAccurate = 0;
-    Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
-    #scaler =  preprocessing.StandardScaler().fit(Y_train)
-    #Y_test = scaler.transform(Y_test)
+    Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z)
     scaler = preprocessing.StandardScaler()
     Y_train = scaler.fit_transform(Y_train)
     Y_test = scaler.transform(Y_test)
@@ -395,36 +414,17 @@ def train():
 
         #print classification_report(Z_test, z_pred)
     print "best accuracy: ",maxAccurate," nearest neighbor:", index
- 
+    knn = neighbors.KNeighborsClassifier(n_neighbors=index)
+    knn.fit(scaler.transform(Y), Z)
+
     return knn, scaler
 
 
-'''
-def find_misclassified(arr, lists_w_labels):
-    
-    #Input: array of arrays that have
-    #go through dictionary to find misclassified files
-    
-
-    for a in arr:
-        print "finding: "
-        print a
-        for l in lists_w_labels:
-            date = l[-1]
-            metrics = l[:-1]
-            found = True
-            for index, el in enumerate(a):
-                if round(el, 5) != round(metrics[index], 5):
-                    found = False
-            if found:
-                print "misclassified: "+ date 
-
-        ### for each misclassified, 
-'''
-def train2():
+def train2(Y, Z):
     maxAccurate = 0;
     Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
-    scaler =  preprocessing.StandardScaler().fit(Y_train)
+    scaler = preprocessing.StandardScaler()
+    Y_train = scaler.fit_transform(Y_train)
     Y_test = scaler.transform(Y_test)
 
     model = ExtraTreesClassifier()
@@ -447,11 +447,11 @@ def train2():
     return model
 
 
-def classify():
+def classify(Y, Z):
     '''
     trains the data and prints the accuracy score
 '''
-    get_all_types("all_data")
+    get_all_types(Y, Z, "all_data")
     maxAccurate = 0;
     Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
     #scaler =  preprocessing.StandardScaler().fit(Y_train)
@@ -473,9 +473,31 @@ def classify():
     save(scaler,'data.scaler')
     return knn, scaler
         #print classification_report(Z_test, z_pred)
-def temp():
-    get_all_types("all_data")
-    return train()
+def temp(Y, Z):
+
+
+    get_all_types(Y, Z, "all_data")
+    Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
+    scaler = preprocessing.StandardScaler()
+    Y_train = scaler.fit_transform(Y_train)
+    Y_test = scaler.transform(Y_test)
+    for n in range(1,20):
+        print n
+
+        knn = neighbors.KNeighborsClassifier(n_neighbors=n)
+        knn.fit(Y_train, Z_train)
+        z_pred = knn.predict(Y_test)
+            #misclassified = Y_test[Z_test != z_pred]
+            #print "misclassified ones,", misclassified
+        print "accuracy score, ", accuracy_score(Z_test, z_pred)
+    #misclassified = Y_test[Z_test != z_pred]
+    #print "misclassified ones,", misclassified
+    #print classification_report(Z_test, z_pred)
+        data_dict = window.create_dictionary("all_data")
+
+        window.test_window(knn, scaler, data_dict)
+
+    return knn, scaler
         
 def main():
     parser = argparse.ArgumentParser()
@@ -506,12 +528,17 @@ def main():
             overall_max(dataFrame,0)
             capture = overall_min(dataFrame,0)
     if args.test:
-            get_all_types("all_data")
 
 #            train2()
-            knn, scaler = train()
+            #knn, scaler = train()
+            Y = []
+            Z = [] 
+            get_all_types(Y, Z, "all_data")
+            train(Y, Z)
+            Y = []
+            Z = [] 
+            temp(Y, Z)
 
-            train()
  #           classify()
 
 
