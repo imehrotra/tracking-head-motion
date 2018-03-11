@@ -41,6 +41,8 @@ public class StartButton : MonoBehaviour {
 	StreamWriter socket_writer;
 	StreamReader socket_reader;
 
+	int send_cnt = 0;
+
 	void Start()
 	{
 		run = GameObject.Find("RunningText").GetComponent<Text>();
@@ -120,7 +122,8 @@ public class StartButton : MonoBehaviour {
 		input_buffer += Input.gyro.rotationRateUnbiased.z.ToString () + ",";
 		input_buffer += Input.gyro.userAcceleration.z.ToString () + ",";
 		input_buffer += xaccl.ToString() + ",";
-		input_buffer += DateTime.Now.ToString("MMddHHmmss") + ",";
+		input_buffer += DateTime.Now.ToString("mmss") + ",";
+		input_buffer += send_cnt.ToString () + ",";
 //		Debug.Log (Input.gyro.rotationRateUnbiased.y);
 //		Debug.Log (Input.gyro.rotationRateUnbiased.z);
 //		Debug.Log (Input.gyro.userAcceleration.z);
@@ -141,6 +144,7 @@ public class StartButton : MonoBehaviour {
 			// Send the buffer, clean it
 //			Debug.Log("Sending: " + input_buffer);
 			writeSocket(input_buffer);
+			send_cnt++;
 
 			StreamWriter writer1 = new StreamWriter (path1, true);
 			writer1.WriteLine (xaccl);
