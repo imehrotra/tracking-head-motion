@@ -531,6 +531,5 @@ def main():
             label = knn.predict(Features)
             print("result:", label)
 '''
->>>>>>> f32412cc7de18f5fa17992d87561d5f629d6fd28
 if __name__ == '__main__':
     main()
