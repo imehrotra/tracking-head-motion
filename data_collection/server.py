@@ -6,8 +6,8 @@ import time
 # from pynput import mouse, keyboard
 import classify2
 from sklearn import neighbors, datasets, preprocessing
-from sklearn.model_selection import train_test_split
-#from sklearn.cross_validation import train_test_split
+#from sklearn.model_selection import train_test_split
+from sklearn.cross_validation import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
@@ -50,29 +50,100 @@ def mouseMove(x,y):
     # Set pointer position
     cursor.position = (x,y)
 
+def flush(rotz,roty,uaccelz,xaccl):
+    rotz = []
+    roty = []
+    uaccelz = []
+    xaccl = []
 
 def threadAPI(conn, clientaddr, x, y):
 
     knn, scaler = classify2.classify()
-    count = 0
-    test = 0
-    test2 = 0
+    #count = 0
+    #test = 0
+    #test2 = 0
+    roty = []
+    rotz = []
+    uaccelz = []
+    xaccl = []
+    cur_roty = []
+    cur_rotz = []
+    cur_uaccelz = []
+    cur_xaccl = []
+
+    ld = False
+    rd = False
+
+
     while 1:
+        # @Isha, can you check the size of data? 
+        data = conn.recv(999999)
+        if data == '\n':
+            continue
+        line = data.split(",")
+        roty.append(float(line[0]))
+        rotz.append(float(line[1]))
+        uaccelz.append(float(line[2]))
+        xaccl.append(float(line[3]))
+        print("Data Time: " + line[4])
+        print("Curr Time: ", time.time())  
+        if (len(roty) > 50):
+            # Get first 50
+            cur_roty = roty[:50]
+            cur_rotz = rotz[:50]
+            cur_uaccelz = uaccelz[:50]
+            cur_xaccl = xaccl[:50]
+
+            # deleted first 25
+            del cur_roty[:25]            
+            del cur_rotz[:25]    
+            del cur_uaccelz[:25]    
+            del cur_xaccl[:25] 
+
+            # make into arrays
+            n_roty = np.array(cur_roty)
+            n_rotz = np.array(cur_rotz)
+            n_uaccelz = np.array(cur_uaccelz)
+            n_xaccl = np.array(cur_xaccl)
+            tmp = []
+            tmp.append(n_xaccl.std())
+            tmp.append(n_uaccelz.std())
+            tmp.append(n_xaccl.max())
+            tmp.append(np.median(n_roty))
+            tmp.append(n_roty.mean())
+            tmp.append(n_rotz.mean())
+            tmp.append(n_rotz.min())
+            Features = []
+            Features.append(tmp)
+
+            print "features", Features
+            scaler.transform(Features)
+            label = knn.predict(Features)
+            print("result:", label)
+
+            if label == "right down":
+                rd = True
+            elif label == "right up":
+                print "RIGHT TILT"
+                rd = False
+                flush(rotz,roty,uaccelz,xaccl)
+
+            if label == "left down":
+                ld = True
+            elif label == "left up":
+                print "LEFT TILT"
+                ld = False
+                flush(rotz,roty,uaccelz,xaccl)
+
+            else:
+                print "NOISY"
+
+
+
         # with open("recv.txt","w") as file:
-        count = 0
-        roty = []
-        rotz = []
-        uaccelz = []
-        xaccl = []
-        cur_roty = []
-        cur_rotz = []
-        cur_uaccelz = []
-        cur_xaccl = []
-        while count <= 50:
+
     # request from the client
-            data = conn.recv(999999)
                 # file.write(data)
-            count+=1
             
         #open file
         # count = 0
@@ -89,54 +160,77 @@ def threadAPI(conn, clientaddr, x, y):
             #    rotz.append(float(line[1]))
             #    uaccelz.append(float(line[2]))
             #    xaccl.append(float(line[3]))
-            if data == '\n':
-                continue
-            line = data.split(",")
-            roty.append(float(line[0]))
-            rotz.append(float(line[1]))
-            uaccelz.append(float(line[2]))
-            xaccl.append(float(line[3]))
-            print("Data Time: " + line[4])
-            print("Curr Time: ", time.time())
-        roty = np.array(roty)
-        rotz = np.array(rotz)
-        uaccelz = np.array(uaccelz)
-        xaccl = np.array(xaccl)
-        tmp = []
-        tmp.append(xaccl.std())
-        tmp.append(uaccelz.std())
-        tmp.append(xaccl.max())
-        tmp.append(np.median(roty))
-        tmp.append(roty.mean())
-        tmp.append(rotz.mean())
-        tmp.append(rotz.min())
-        Features = []
-        Features.append(tmp)
-        print "features", Features
-        if test == 0:
-            scaler.transform(Features)
-            test = knn.predict(Features)
-        else:
-            test2 = knn.predict(Features)              
-        if test == 'right down' and test2 == 'right up':
-            # keyPressR()
-            print "right"
-            test = 0
-        elif test == 'left down' and test2 == 'left up':
-            # keyPressL()
-            print "left"
-            test = 0
-        elif test2 == 'right down':
-            print "start right down"
-            test = test2
-        elif test2 == 'left down':
-            print "start left down"
-            test = test2
-        else:
-            print("test:", test)
-            print("test2:", test2)
-            print "noisy"
-            continue
+            # if data == '\n':
+            #     continue
+            # line = data.split(",")
+            # roty.append(float(line[0]))
+            # rotz.append(float(line[1]))
+            # uaccelz.append(float(line[2]))
+            # xaccl.append(float(line[3]))
+            # print("Data Time: " + line[4])
+            # print("Curr Time: ", time.time())
+        # roty = np.array(roty)
+        # rotz = np.array(rotz)
+        # uaccelz = np.array(uaccelz)
+        # xaccl = np.array(xaccl)
+        # tmp = []
+        # tmp.append(xaccl.std())
+        # tmp.append(uaccelz.std())
+        # tmp.append(xaccl.max())
+        # tmp.append(np.median(roty))
+        # tmp.append(roty.mean())
+        # tmp.append(rotz.mean())
+        # tmp.append(rotz.min())
+        # Features = []
+        # Features.append(tmp)
+        # print "features", Features
+        # if test == 0:
+        #     scaler.transform(Features)
+        #     test = knn.predict(Features)
+        # else:
+        #     test2 = knn.predict(Features)
+        # if test == 'right down' and test2 == 'right up':
+        #     # keyPressR()
+        #     print "right"
+        #     test = 0
+        # elif test == 'left down' and test2 == 'left up':
+        #     # keyPressL()
+        #     print "left"
+        #     test = 0
+        # elif test2 == 'right down':
+        #     print "start right down"
+        #     test = test2
+        # elif test2 == 'left down':
+        #     print "start left down"
+        #     test = test2
+        # else:
+        #     print("test:", test)
+        #     print("test2:", test2)
+        #     print "noisy"
+        #     continue
+
+
+        #     else:
+        #         test2 = knn.predict(Features)              
+        #     if test == 'right down' and test2 == 'right up':
+        #         # keyPressR()
+        #         print "right"
+        #         test = 0
+        #     elif test == 'left down' and test2 == 'left up':
+        #         # keyPressL()
+        #         print "left"
+        #         test = 0
+        #     elif test2 == 'right down':
+        #         print "start right down"
+        #         test = test2
+        #     elif test2 == 'left down':
+        #         print "start left down"
+        #         test = test2
+        #     else:
+        #         print("test:", test)
+        #         print("test2:", test2)
+        #         print "noisy"
+        #         continue
     
     conn.close()
 
