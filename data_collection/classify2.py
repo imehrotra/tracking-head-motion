@@ -233,7 +233,7 @@ def get_all_types(path):
 
         #lists_w_labels.append(tmp +[date_key])
 
-
+        return data_dict
 '''
 parse test trial
 '''
@@ -378,28 +378,97 @@ def train():
         #print classification_report(Z_test, z_pred)
     print "best accuracy: ",maxAccurate," nearest neighbor:", index
 
-'''
-def find_misclassified(arr, lists_w_labels):
+def test_window(knn, scaler, data_dict):
     
-    #Input: array of arrays that have
-    #go through dictionary to find misclassified files
-    
+    for date_key, d in data_dict.items():
+        print d["label"]
+        window(knn, scaler, d)
 
-    for a in arr:
-        print "finding: "
-        print a
-        for l in lists_w_labels:
-            date = l[-1]
-            metrics = l[:-1]
-            found = True
-            for index, el in enumerate(a):
-                if round(el, 5) != round(metrics[index], 5):
-                    found = False
-            if found:
-                print "misclassified: "+ date 
+        tmp.append(d["xaccl"].getDev())
 
-        ### for each misclassified, 
-'''
+        # uaccl_z dev
+        tmp.append(d["uaccl"][2].getDev())
+
+        # xaccl: max
+        tmp.append(d["xaccl"].getMax())
+
+        # rot_z med
+        tmp.append(d["rot"][2].getMed())
+
+        #rot_y mean
+        tmp.append(d["rot"][1].getMean())
+
+        # rot_z mean
+        tmp.append(d["rot"][2].getMean())
+
+        # rot_z min
+        tmp.append(d["rot"][2].getMin())
+
+def window(knn, scaler, d):
+    roty = d["rot"][1]
+    rotz = d["rot"][2]
+    uaccelz = d["uaccl"][2]
+    xaccl = d["xaccl"]
+    cur_roty = []
+    cur_rotz = []
+    cur_uaccelz = []
+    cur_xaccl = []
+
+    ld = False
+    rd = False
+
+        # @Isha, can you check the size of data? 
+    while len(roty) > 50:
+
+        cur_roty = roty[:50]
+        cur_rotz = rotz[:50]
+        cur_uaccelz = uaccelz[:50]
+        cur_xaccl = xaccl[:50]
+
+        # deleted first 25
+        del cur_roty[:25]            
+        del cur_rotz[:25]    
+        del cur_uaccelz[:25]    
+        del cur_xaccl[:25] 
+
+        # make into arrays
+        n_roty = np.array(cur_roty)
+        n_rotz = np.array(cur_rotz)
+        n_uaccelz = np.array(cur_uaccelz)
+        n_xaccl = np.array(cur_xaccl)
+        tmp = []
+        tmp.append(n_xaccl.std())
+        tmp.append(n_uaccelz.std())
+        tmp.append(n_xaccl.max())
+        tmp.append(np.median(n_roty))
+        tmp.append(n_roty.mean())
+        tmp.append(n_rotz.mean())
+        tmp.append(n_rotz.min())
+        Features = []
+        Features.append(tmp)
+
+        print "features", Features
+        scaler.transform(Features)
+        label = knn.predict(Features)
+        print("result:", label)
+
+        if label == "right down":
+            rd = True
+        elif label == "right up":
+            print "RIGHT TILT"
+            rd = False
+            flush(rotz,roty,uaccelz,xaccl)
+
+        if label == "left down":
+            ld = True
+        elif label == "left up":
+            print "LEFT TILT"
+            ld = False
+            flush(rotz,roty,uaccelz,xaccl)
+
+        else:
+            print "NOISY"
+    print "DONE"
 def train2():
     maxAccurate = 0;
     Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
@@ -430,7 +499,6 @@ def classify():
     '''
     trains the data and prints the accuracy score
 '''
-    get_all_types("all_data")
     maxAccurate = 0;
     Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
     #scaler =  preprocessing.StandardScaler().fit(Y_train)
@@ -481,10 +549,11 @@ def main():
             overall_max(dataFrame,0)
             capture = overall_min(dataFrame,0)
     if args.test:
-            get_all_types("all_data")
+            data_dict = get_all_types("all_data")
 
 #            train2()
-            train()
+            knn, scaler = classify() #train()
+            test_window(knn, scaler, data_dict)
 
 if __name__ == '__main__':
     main()
