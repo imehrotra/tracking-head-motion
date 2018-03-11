@@ -10,14 +10,16 @@ import re
 import pickle
 import Metrics as met
 from sklearn import neighbors, datasets, preprocessing
-#from sklearn.model_selection import train_test_split
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
+#from sklearn.cross_validation import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 from sklearn import tree
 from sklearn.ensemble import ExtraTreesClassifier
 
+#recognifure as necessary
+dump_path = '/Users/Wendy/Desktop/Mobile Computing/tracking-head-motion/data_collection/'
 epsilon = 0.000001
 
 #global variables for storing training
@@ -25,6 +27,22 @@ Y = []
 Z = []
 
 from itertools import izip_longest
+
+
+def save(data, filename):
+    if not path.exists(dump_path):
+        makedirs(dump_path)
+    filename = path.join(dump_path, filename)
+    fileObject = open(filename, 'wb')
+    pickle.dump(data, fileObject)
+    fileObject.close()
+
+
+def load(filename):
+    filename = path.join(dump_path, filename)
+    fileObject = open(filename, 'rb')
+    return pickle.load(fileObject)
+
 
 def grouper(n, iterable, fillvalue=None):
     "Collect data into fixed-length chunks or blocks"
@@ -378,6 +396,9 @@ def train():
         #print classification_report(Z_test, z_pred)
     print "best accuracy: ",maxAccurate," nearest neighbor:", index
 
+   # save(knn,'data.knn')
+   # print "yay"
+
 '''
 def find_misclassified(arr, lists_w_labels):
     
@@ -448,6 +469,8 @@ def classify():
     print "accuracy score, ", accuracy_score(Z_test, z_pred)
     print "confusion_matrix, "
     print confusion_matrix(Z_test, z_pred)
+    save(knn,'data.knn')
+    save(scaler,'data.scaler')
     return knn, scaler
         #print classification_report(Z_test, z_pred)
 
@@ -485,6 +508,24 @@ def main():
 
 #            train2()
             train()
+ #           classify()
 
+
+'''            knn = load('data.knn')
+            scaler = load('data.scaler')
+            tmp = []
+            tmp.append(0)
+            tmp.append(0.2)
+            tmp.append(0)
+            tmp.append(0)
+            tmp.append(0.2)
+            tmp.append(0.1)
+            tmp.append(1)
+            Features = []
+            Features.append(tmp)
+            scaler.transform(Features)
+            label = knn.predict(Features)
+            print("result:", label)
+'''
 if __name__ == '__main__':
     main()
