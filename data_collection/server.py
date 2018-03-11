@@ -14,7 +14,6 @@ from sklearn.feature_selection import chi2
 import Metrics as met
 import csv
 import numpy as np
-
 '''
 Presses right arrow key
 '''
@@ -58,7 +57,8 @@ def flush(rotz,roty,uaccelz,xaccl):
 
 def threadAPI(conn, clientaddr, x, y):
 
-    knn, scaler = classify2.classify()
+    knn = classify2.load('data.knn')
+    scaler = classify2.load('data.scaler')
     #count = 0
     #test = 0
     #test2 = 0
@@ -249,6 +249,8 @@ def main():
 
     if args.port is None:
         port = 8081
+    else:
+        port = int(args.port)
 
     if args.x:
         x = args.x
@@ -260,8 +262,7 @@ def main():
     else:
         y = 800
         
-    #hostname and port name
-    port = int(args.port)
+    #hostname
     host = ''
 
     # create a server socket with host and port
