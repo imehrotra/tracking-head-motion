@@ -81,24 +81,25 @@ def threadAPI(conn, clientaddr, x, y):
         if data == '\n':
             continue
         line = data.split(",")
+        # print("Len: ", len(line))
         roty.append(float(line[0]))
         rotz.append(float(line[1]))
         uaccelz.append(float(line[2]))
         xaccl.append(float(line[3]))
-        print("Data Time: " + line[4])
-        print("Curr Time: ", time.time())  
-        if (len(roty) > 50):
+        # print("Data Time: " + line[4])
+        # print("Curr Time: ", time.localtime())  
+        if (len(roty) > 100):
             # Get first 50
-            cur_roty = roty[:50]
-            cur_rotz = rotz[:50]
-            cur_uaccelz = uaccelz[:50]
-            cur_xaccl = xaccl[:50]
+            cur_roty = roty[:100]
+            cur_rotz = rotz[:100]
+            cur_uaccelz = uaccelz[:100]
+            cur_xaccl = xaccl[:100]
 
             # deleted first 25
-            del cur_roty[:25]            
-            del cur_rotz[:25]    
-            del cur_uaccelz[:25]    
-            del cur_xaccl[:25] 
+            del roty[:50]            
+            del rotz[:50]    
+            del uaccelz[:50]    
+            del xaccl[:50] 
 
             # make into arrays
             n_roty = np.array(cur_roty)
