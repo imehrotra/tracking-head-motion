@@ -314,7 +314,7 @@ def classify():
     '''
     trains the data and prints the accuracy score
 '''
-    get_all_types("all_data")
+    get_all_types("new_data")
     maxAccurate = 0;
     Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
     #scaler =  preprocessing.StandardScaler().fit(Y_train)
@@ -582,7 +582,7 @@ def window(knn, scaler, d):
 def main():
 #            train2()
     knn, scaler = classify2.temp() #train()
-    data_dict = create_dictionary("all_data")
+    data_dict = create_dictionary("new_data")
     test_window(knn, scaler, data_dict)
 
 if __name__ == '__main__':

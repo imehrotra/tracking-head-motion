@@ -19,7 +19,8 @@ from sklearn import tree
 from sklearn.ensemble import ExtraTreesClassifier
 
 #recognifure as necessary
-dump_path = '/Users/Wendy/Desktop/Mobile Computing/tracking-head-motion/data_collection/'
+# dump_path = '/Users/Wendy/Desktop/Mobile Computing'
+dump_path = '/Users/isham/tracking-head-motion/data_collection/'
 epsilon = 0.000001
 
 #global variables for storing training
@@ -531,6 +532,6 @@ def main():
             label = knn.predict(Features)
             print("result:", label)
 '''
->>>>>>> f32412cc7de18f5fa17992d87561d5f629d6fd28
+
 if __name__ == '__main__':
     main()

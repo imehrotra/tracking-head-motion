@@ -57,8 +57,9 @@ def flush(rotz,roty,uaccelz,xaccl):
 
 def threadAPI(conn, clientaddr, x, y):
 
-    knn = classify2.load('data.knn')
-    scaler = classify2.load('data.scaler')
+    knn, scaler = classify2.classify() 
+    # knn = classify2.load('data.knn')
+    # scaler = classify2.load('data.scaler')
     #count = 0
     #test = 0
     #test2 = 0
@@ -87,19 +88,20 @@ def threadAPI(conn, clientaddr, x, y):
         uaccelz.append(float(line[2]))
         xaccl.append(float(line[3]))
         # print("Data Time: " + line[4])
-        # print("Curr Time: ", time.localtime())  
-        if (len(roty) > 100):
+        # print("Curr Time: ", time.localtime().tm_min, time.localtime().tm_sec) 
+        # print("Counter: " + line[5]) 
+        if (len(roty) > 50):
             # Get first 50
-            cur_roty = roty[:100]
-            cur_rotz = rotz[:100]
-            cur_uaccelz = uaccelz[:100]
-            cur_xaccl = xaccl[:100]
+            cur_roty = roty[:50]
+            cur_rotz = rotz[:50]
+            cur_uaccelz = uaccelz[:50]
+            cur_xaccl = xaccl[:50]
 
             # deleted first 25
-            del roty[:50]            
-            del rotz[:50]    
-            del uaccelz[:50]    
-            del xaccl[:50] 
+            del roty[:10]            
+            del rotz[:10]    
+            del uaccelz[:10]    
+            del xaccl[:10] 
 
             # make into arrays
             n_roty = np.array(cur_roty)
