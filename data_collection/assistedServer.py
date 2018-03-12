@@ -79,9 +79,11 @@ def threadAPI(conn, clientaddr, x, y):
         rotz = []
         uaccelz = []
         xaccl = [] 
+        print("Data: " + data)
 
         for row in data:            
             line = row.split(",")
+            print("Line 0: " + line[0])
             roty.append(float(line[0]))
             rotz.append(float(line[1]))
             uaccelz.append(float(line[2]))

@@ -21,7 +21,7 @@ public static class MyExtensions
 
 public class StartButton : MonoBehaviour {
 
-	string path1, path2, path3, path4, path5, path6;
+	string path1, path2, path3, path4, path5, path6, path7;
 	bool running = false;
 
 	public Text run;
@@ -54,6 +54,8 @@ public class StartButton : MonoBehaviour {
 		path4 = Application.persistentDataPath + "/" + direction + "_attitude.txt".AppendTimeStamp();
 		path5 = Application.persistentDataPath + "/" + direction + "_rotrate.txt".AppendTimeStamp();
 		path6 = Application.persistentDataPath + "/" + direction + "_userAccl.txt".AppendTimeStamp();
+		path7 = Application.persistentDataPath + "/" + "send.txt".AppendTimeStamp();
+
 	}
 
 	void NewPath() {
@@ -63,7 +65,9 @@ public class StartButton : MonoBehaviour {
 		path4 = Application.persistentDataPath + "/" + direction + "_attitude.txt".AppendTimeStamp();
 		path5 = Application.persistentDataPath + "/" + direction + "_rotrate.txt".AppendTimeStamp();
 		path6 = Application.persistentDataPath + "/" + direction + "_userAccl.txt".AppendTimeStamp();
+		path7 = Application.persistentDataPath + "/" + "send.txt";
 	}
+
 
 	void Update()
 	{
@@ -125,7 +129,7 @@ public class StartButton : MonoBehaviour {
 		input_buffer += DateTime.Now.ToString("mmss") + ",";
 		input_buffer += send_cnt.ToString () + ",";
 
-		input_buffer += "\n";
+//		input_buffer += "\n";
 
 //		ASCIIEncoding ascii = new ASCIIEncoding();
 //		Debug.Log("Byte Count:" + ascii.GetByteCount(input_buffer));
@@ -167,9 +171,13 @@ public class StartButton : MonoBehaviour {
 			StreamWriter writer6 = new StreamWriter (path6, true);
 			writer6.WriteLine (Input.gyro.userAcceleration);
 			writer6.Close ();
+
+			StreamWriter writer7 = new StreamWriter (path7, true);
+			writer7.WriteLine(input_buffer);
+			writer7.Close ();
 		}
 
-//		input_buffer = "";
+		input_buffer = "";
 	}
 
 	public void TaskOnClick() {
@@ -178,10 +186,12 @@ public class StartButton : MonoBehaviour {
 			running = false;
 			run.text = "STOPPED";
 
+			string body = File.ReadAllText(Application.persistentDataPath + "/" + "send.txt");
 			Debug.Log("Sending: input_buffer");
-			writeSocket(input_buffer);
+			writeSocket(body);
 			send_cnt++;
-			input_buffer = "";
+			body = "";
+//			input_buffer = "";
 		} else {
 			running = true;
 			run.text = "RUNNING";
