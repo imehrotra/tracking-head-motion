@@ -124,10 +124,8 @@ public class StartButton : MonoBehaviour {
 		input_buffer += xaccl.ToString() + ",";
 		input_buffer += DateTime.Now.ToString("mmss") + ",";
 		input_buffer += send_cnt.ToString () + ",";
-//		Debug.Log (Input.gyro.rotationRateUnbiased.y);
-//		Debug.Log (Input.gyro.rotationRateUnbiased.z);
-//		Debug.Log (Input.gyro.userAcceleration.z);
-//		Debug.Log (xaccl);
+
+		input_buffer += "\n";
 
 //		ASCIIEncoding ascii = new ASCIIEncoding();
 //		Debug.Log("Byte Count:" + ascii.GetByteCount(input_buffer));
@@ -143,8 +141,8 @@ public class StartButton : MonoBehaviour {
 
 			// Send the buffer, clean it
 //			Debug.Log("Sending: " + input_buffer);
-			writeSocket(input_buffer);
-			send_cnt++;
+//			writeSocket(input_buffer);
+//			send_cnt++;
 
 			StreamWriter writer1 = new StreamWriter (path1, true);
 			writer1.WriteLine (xaccl);
@@ -171,7 +169,7 @@ public class StartButton : MonoBehaviour {
 			writer6.Close ();
 		}
 
-		input_buffer = "";
+//		input_buffer = "";
 	}
 
 	public void TaskOnClick() {
@@ -179,6 +177,11 @@ public class StartButton : MonoBehaviour {
 		if (running) {
 			running = false;
 			run.text = "STOPPED";
+
+			Debug.Log("Sending: input_buffer");
+			writeSocket(input_buffer);
+			send_cnt++;
+			input_buffer = "";
 		} else {
 			running = true;
 			run.text = "RUNNING";
