@@ -10,8 +10,8 @@ import re
 
 import Metrics as met
 from sklearn import neighbors, datasets, preprocessing
-#from sklearn.model_selection import train_test_split
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
+#from sklearn.cross_validation import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
@@ -335,7 +335,6 @@ def classify():
     print confusion_matrix(Z_test, z_pred)
     return knn, scaler
         #print classification_report(Z_test, z_pred)
->>>>>>> 9af2c93003ac64543abfa08a76c0e73dc1221cb4
 
 def toSingle(array,i):
         #takes 2D array and selects for one column i
