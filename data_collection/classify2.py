@@ -8,10 +8,11 @@ import argparse
 import math
 import re
 import pickle
+import window
 import Metrics as met
 from sklearn import neighbors, datasets, preprocessing
-from sklearn.model_selection import train_test_split
-#from sklearn.cross_validation import train_test_split
+#from sklearn.model_selection import train_test_split
+from sklearn.cross_validation import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
@@ -19,13 +20,11 @@ from sklearn import tree
 from sklearn.ensemble import ExtraTreesClassifier
 
 #recognifure as necessary
-# dump_path = '/Users/Wendy/Desktop/Mobile Computing'
-dump_path = '/Users/isham/tracking-head-motion/data_collection/'
+dump_path = ""#'data_collection/'
 epsilon = 0.000001
 
 #global variables for storing training
-Y = []
-Z = []
+
 
 from itertools import izip_longest
 
@@ -79,7 +78,9 @@ def rot_txt(filename):
     if not ".txt" in filename:
       print(filename + " not a txt file")
       return None
-    dicts = []
+    dicts_x = []
+    dicts_y = []
+    dicts_z = []
     for line in f:
         structure = re.split('([(]?)(.*?)([)]?)(,|$)',line)
         list1 = []
@@ -90,14 +91,17 @@ def rot_txt(filename):
         if 0:
                 continue
         else:
-                list1.append(float(structure[2]))
-                list1.append(float(structure[7]))
-                list1.append(float(structure[12]))
-                dicts.append(list1)
-    dicts = np.array([np.array(xi) for xi in dicts])
-    dicts_x = toSingle(dicts,0)
-    dicts_y = toSingle(dicts,1)
-    dicts_z = toSingle(dicts,2)
+            dicts_x.append(x)
+            dicts_y.append(y)
+            dicts_z.append(z)
+    if filename[:2] != "bk" and filename[:2] != "ns":
+        if len(dicts_x)>100:
+            return None
+        if len(dicts_x)>80:
+            dicts_x = dicts_x[20:-5]
+            dicts_y = dicts_y[20:-5]
+            dicts_z = dicts_z[20:-5]
+
 
     dataX = met.Metrics(in_min=np.min(dicts_x), in_max=np.max(dicts_x), in_mean=np.mean(dicts_x), in_dev=np.std(dicts_x), in_med=np.median(dicts_x))
     dataY = met.Metrics(in_min=np.min(dicts_y), in_max=np.max(dicts_y), in_mean=np.mean(dicts_y), in_dev=np.std(dicts_y), in_med=np.median(dicts_y))
@@ -106,6 +110,55 @@ def rot_txt(filename):
         #print dataZ
     #return (dataX,dataZ)
     return (dataX,dataY,dataZ)
+
+
+def rot_txt2(filename):
+  '''
+  Input: A path to a accl and rotation textfile
+  Return: a Metric 
+  '''
+  with open(filename, "r") as f:
+    if not ".txt" in filename:
+      print(filename + " not a txt file")
+      return None
+    dicts_x = []
+    dicts_y = []
+    dicts_z = []
+    for line in f:
+        structure = re.split('([(]?)(.*?)([)]?)(,|$)',line)
+        list1 = []
+        x = float(structure[2])
+        y = float(structure[7])
+        z = float(structure[12])
+        #if (abs(0-x) < epsilon) and (abs(0-y) < epsilon) and (abs(0-z) < epsilon):
+        if 0:
+                continue
+        else:
+            dicts_x.append(x)
+            dicts_y.append(y)
+            dicts_z.append(z)
+
+        #print dataZ
+    #return (dataX,dataZ)
+    return (dicts_x,dicts_y,dicts_z)
+
+def xyz_accl2(filename):
+    '''
+    Input: A path to x, y, or z accl, which only has one value
+    Return: a metric
+    '''
+    with open(filename, "r") as f:
+        if not ".txt" in filename:
+            print(filename + " not a txt file")
+            return None
+        list_data = []
+        for line in f:
+            list_data.append(float(line))   
+
+
+ #   data = met.Metrics(in_min=np.min(list_data), in_max=np.max(list_data), in_mean=np.mean(list_data), in_dev=np.std(list_data), in_med=np.median(list_data))
+    return (list_data)
+
 def xyz_accl(filename):
     '''
     Input: A path to x, y, or z accl, which only has one value
@@ -117,9 +170,17 @@ def xyz_accl(filename):
             return None
         list_data = []
         for line in f:
-            list_data.append(float(line))    
+            list_data.append(float(line))   
+
+    if filename[:2] != "bk" and filename[:2] != "ns":
+        if len(list_data)>100:
+            return None
+        if len(list_data)>80:        
+            list_data = list_data[20:-5]
+
     data = met.Metrics(in_min=np.min(list_data), in_max=np.max(list_data), in_mean=np.mean(list_data), in_dev=np.std(list_data), in_med=np.median(list_data))
     return (data)
+
 def attitude_txt(filename):
     '''
     Input: A path to attitude
@@ -129,33 +190,129 @@ def attitude_txt(filename):
         if not ".txt" in filename:
             print(filename + " not a txt file")
             return None
-        dicts = []
+        dicts_x = []
+        dicts_y = []
+        dicts_z = []
+        dicts_w = []
+
         for line in f:
             structure = re.split('([(]?)(.*?)([)]?)(,|$)',line)
-            list1 = []
             x = float(structure[2])
             y = float(structure[7])
-            z = float(structure[12])
-            #if (abs(0-x) < epsilon) and (abs(0-y) < epsilon) and (abs(0-z) < epsilon):
-        #                               continue
-        #                       else:
-            list1.append(float(structure[2]))
-            list1.append(float(structure[7]))
-            list1.append(float(structure[12]))
-            list1.append(float(structure[17]))
-            dicts.append(list1)
-    dicts = np.array([np.array(xi) for xi in dicts])
-    dicts_x = toSingle(dicts,0)
-    dicts_y = toSingle(dicts,1)
-    dicts_z = toSingle(dicts,2)
-    dicts_w = toSingle(dicts,3)
+            z = float(structure[12]) 
+            w = float(structure[17])
+            dicts_x.append(x)
+            dicts_y.append(y)
+            dicts_z.append(z)
+            dicts_w.append(w)
+
+    if filename[:2] != "bk" and filename[:2] != "ns":
+        if len(dicts_x)>100:
+            return None
+        if len(dicts_x)>80:
+            dicts_x = dicts_x[20:-5]
+            dicts_y = dicts_y[20:-5]
+            dicts_z = dicts_z[20:-5]
+            dicts_w = dicts_w[20:-5]
+
     dataX = met.Metrics(in_min=np.min(dicts_x), in_max=np.max(dicts_x), in_mean=np.mean(dicts_x), in_dev=np.std(dicts_x), in_med=np.median(dicts_x))
     dataY = met.Metrics(in_min=np.min(dicts_y), in_max=np.max(dicts_y), in_mean=np.mean(dicts_y), in_dev=np.std(dicts_y), in_med=np.median(dicts_y))
     dataZ = met.Metrics(in_min=np.min(dicts_z), in_max=np.max(dicts_z), in_mean=np.mean(dicts_z), in_dev=np.std(dicts_z), in_med=np.median(dicts_z))
     dataW = met.Metrics(in_min=np.min(dicts_w), in_max=np.max(dicts_w), in_mean=np.mean(dicts_w), in_dev=np.std(dicts_w), in_med=np.median(dicts_w))
     #print dataZ
     return (dataX,dataY,dataZ,dataW)
-def get_all_types(path):
+
+def attitude_txt2(filename):
+    '''
+    Input: A path to attitude
+    Return: a metric
+    '''
+    with open(filename, "r") as f:
+        if not ".txt" in filename:
+            print(filename + " not a txt file")
+            return None
+        dicts_x = []
+        dicts_y = []
+        dicts_z = []
+        dicts_w = []
+
+        for line in f:
+            structure = re.split('([(]?)(.*?)([)]?)(,|$)',line)
+            x = float(structure[2])
+            y = float(structure[7])
+            z = float(structure[12]) 
+            w = float(structure[17])
+            dicts_x.append(x)
+            dicts_y.append(y)
+            dicts_z.append(z)
+            dicts_w.append(w)
+
+ 
+ #   dataX = met.Metrics(in_min=np.min(dicts_x), in_max=np.max(dicts_x), in_mean=np.mean(dicts_x), in_dev=np.std(dicts_x), in_med=np.median(dicts_x))
+#    dataY = met.Metrics(in_min=np.min(dicts_y), in_max=np.max(dicts_y), in_mean=np.mean(dicts_y), in_dev=np.std(dicts_y), in_med=np.median(dicts_y))
+#    dataZ = met.Metrics(in_min=np.min(dicts_z), in_max=np.max(dicts_z), in_mean=np.mean(dicts_z), in_dev=np.std(dicts_z), in_med=np.median(dicts_z))
+#    dataW = met.Metrics(in_min=np.min(dicts_w), in_max=np.max(dicts_w), in_mean=np.mean(dicts_w), in_dev=np.std(dicts_w), in_med=np.median(dicts_w))
+    #print dataZ
+    return (dicts_x,dicts_y,dicts_z,dicts_w)
+
+def get_all_types_window(Y,Z,path):
+    '''
+    Given folder, will extract arrays for each type of data.
+    bd = [[zAccl][yAccl][xAccl][][]p[]]
+    '''
+    data_dict = create_dictionary2(path)
+    
+    action_type = ["bk", "ns", "fd", "ld", "lu", "rd", "ru"]
+
+    # Right now, I'm classifying the nods as noisy data. If we want to recognize it, 
+    # we can easily change the label
+    # alphabetically: left down, left up, noisy  right down, right up
+    dict_labels = {"bk": "noisy",  "ns": "noisy", "fd":"noisy", "ld":"left down", "lu":"left up", "rd":"right down", "ru":"right up"}
+    label = ""
+    lists_w_labels = []
+    for date_key, d in data_dict.items():
+        tmp = []
+ 
+        if (d["xaccl"] is not None) and (d["uaccl"] is not None) and (d["rot"] is not None):
+            
+            if(len(d["xaccl"]) <= 80):
+                tmp.append(np.std(d["xaccl"]))
+                tmp.append(np.max(d["xaccl"]))
+                tmp.append(np.std(d["uaccl"][2]))
+                tmp.append(np.median(d["rot"][2]))
+                tmp.append(np.mean(d["rot"][2]))
+                tmp.append(np.min(d["rot"][2]))
+                tmp.append(np.mean(d["rot"][1]))
+                Y.append(tmp)
+                Z.append(dict_labels[d["label"]])
+            else:
+
+                while(len(d["xaccl"]) > 50):
+                      tmp = []
+                      tempListA = d["xaccl"][:50]
+                      del d["xaccl"][:10]
+                      tmp.append(np.std(tempListA))
+                      tmp.append(np.max(tempListA))
+                      tempListB = d["uaccl"][2][:50]
+                      del d["uaccl"][2][:10]
+                      tmp.append(np.std(tempListB))
+                      tempListC = d["rot"][2][:50]
+                      del d["rot"][2][:10]
+                      tmp.append(np.median(tempListC))
+                      tmp.append(np.mean(tempListC))
+                      tmp.append(np.min(tempListC))
+                      tempListD = d["rot"][1][:50]
+                      del d["rot"][1][:10]
+                      tmp.append(np.mean(tempListD))
+                      Y.append(tmp)
+                      Z.append(dict_labels[d["label"]])
+        #lists_w_labels.append(tmp +[date_key])
+    return Y, Z
+
+
+
+
+def get_all_types(Y, Z, path):
     '''
     Given folder, will extract arrays for each type of data.
     bd = [[zAccl][yAccl][xAccl][][]p[]]
@@ -208,8 +365,10 @@ def get_all_types(path):
             tmp.append(d["rot"][2].getMin())
             Y.append(tmp)
             Z.append(dict_labels[d["label"]])
-        else:
-            print date_key
+
+        #else:
+            
+            #print date_key
 
 
         #uaccl_x dev
@@ -251,7 +410,7 @@ def get_all_types(path):
         '''
 
         #lists_w_labels.append(tmp +[date_key])
-
+    return Y, Z
 
 '''
 parse test trial
@@ -336,6 +495,33 @@ def extract_data(d, filename, path):
         d["uaccl"] = rot_txt(fullname) #like rot, user Accl has 3 places...
 
 
+def extract_data2(d, filename, path):
+    '''
+    Given filename, extract that particular type of data by assigning a Metric
+    to a dictionary.... at the end we'll have a dictionary of metrics. Each dict value
+    is a tuple, with at least one Metric
+    '''
+    fullname = os.path.join(path,filename)
+    data_type = filename[3]
+    # 5* (1 * 3 + 3*2 + 4) = 65 features 
+    if (data_type == "x"):
+        d["xaccl"] = xyz_accl2(fullname) 
+
+    elif (data_type == "y"):
+        d["yaccl"] = xyz_accl2(fullname)
+
+    elif (data_type == "z"):
+        d["zaccl"] = xyz_accl2(fullname) 
+
+    elif (data_type == "r"):
+        d["rot"] = rot_txt2(fullname)
+
+    elif (data_type == "a"):            
+        d["att"] = attitude_txt2(fullname)
+
+    elif (data_type == "u"):
+        d["uaccl"] = rot_txt2(fullname) #like rot, user Accl has 3 places...
+
 def create_dictionary(path):
     '''
     {"DATE": {"label": ACTION_LABEL, "rot": [], "xaccl": [], "yaccl": [], "zAccl": [], "attitude": [], "uAccl: []"}}
@@ -348,15 +534,35 @@ def create_dictionary(path):
         if d is None:
             d = dict.fromkeys(data_type)
             d["label"] = filename[:2]
-            
             data_dict[date] = d
         extract_data(d, filename, path) #Have to implement this
+
+    print "create dictionary"
+
+    return data_dict
+
+def create_dictionary2(path):
+    '''
+    {"DATE": {"label": ACTION_LABEL, "rot": [], "xaccl": [], "yaccl": [], "zAccl": [], "attitude": [], "uAccl: []"}}
+    '''
+    data_type = ["label", "rot", "xaccl", "yaccl", "zaccl", "att", "uaccl"]
+    data_dict = {}
+    for filename in os.listdir(path):
+        date = filename[-14: -4]
+        d = data_dict.get(date)
+        if d is None:
+            d = dict.fromkeys(data_type)
+            d["label"] = filename[:2]
+            data_dict[date] = d
+        extract_data2(d, filename, path) #Have to implement this
+
+    print "create dictionary"
+
     return data_dict
 
 def to_dictionary(filename,path):
    
     data_type = ["label", "rot", "xaccl", "yaccl", "zaccl", "att", "uaccl"]
-    data_dict = {}
 
     date = filename[-14: -4]
     d = data_dict.get(date)
@@ -369,14 +575,12 @@ def to_dictionary(filename,path):
     return data_dict
 
  
-def train():
+def train(Y, Z):
     '''
     trains the data and prints the accuracy score
 '''
     maxAccurate = 0;
-    Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
-    #scaler =  preprocessing.StandardScaler().fit(Y_train)
-    #Y_test = scaler.transform(Y_test)
+    Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z)
     scaler = preprocessing.StandardScaler()
     Y_train = scaler.fit_transform(Y_train)
     Y_test = scaler.transform(Y_test)
@@ -396,36 +600,18 @@ def train():
 
         #print classification_report(Z_test, z_pred)
     print "best accuracy: ",maxAccurate," nearest neighbor:", index
- 
+    knn = neighbors.KNeighborsClassifier(n_neighbors=index)
+    knn.fit(scaler.transform(Y), Z)
+    
+
     return knn, scaler
 
 
-'''
-def find_misclassified(arr, lists_w_labels):
-    
-    #Input: array of arrays that have
-    #go through dictionary to find misclassified files
-    
-
-    for a in arr:
-        print "finding: "
-        print a
-        for l in lists_w_labels:
-            date = l[-1]
-            metrics = l[:-1]
-            found = True
-            for index, el in enumerate(a):
-                if round(el, 5) != round(metrics[index], 5):
-                    found = False
-            if found:
-                print "misclassified: "+ date 
-
-        ### for each misclassified, 
-'''
-def train2():
+def train2(Y, Z):
     maxAccurate = 0;
     Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
-    scaler =  preprocessing.StandardScaler().fit(Y_train)
+    scaler = preprocessing.StandardScaler()
+    Y_train = scaler.fit_transform(Y_train)
     Y_test = scaler.transform(Y_test)
 
     model = ExtraTreesClassifier()
@@ -446,13 +632,11 @@ def train2():
     print "accuracy score, ", accuracy_score(Z_test, z_pred)
     print "confusion_matrix, ", confusion_matrix(Z_test, z_pred)
     return model
-
-
-def classify():
+def classify_with_window(Y, Z):
     '''
     trains the data and prints the accuracy score
 '''
-    get_all_types("all_data")
+    get_all_types_window(Y, Z, "all_data")
     maxAccurate = 0;
     Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
     #scaler =  preprocessing.StandardScaler().fit(Y_train)
@@ -470,13 +654,57 @@ def classify():
     print "accuracy score, ", accuracy_score(Z_test, z_pred)
     print "confusion_matrix, "
     print confusion_matrix(Z_test, z_pred)
-    save(knn,'data.knn')
-    save(scaler,'data.scaler')
+    return knn, scaler
+
+def classify(Y, Z):
+    '''
+    trains the data and prints the accuracy score
+'''
+    get_all_types(Y, Z, "all_data")
+    maxAccurate = 0;
+    Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
+    #scaler =  preprocessing.StandardScaler().fit(Y_train)
+    #Y_test = scaler.transform(Y_test)
+    scaler = preprocessing.StandardScaler()
+    Y_train = scaler.fit_transform(Y_train)
+    Y_test = scaler.transform(Y_test)
+
+    
+    knn = neighbors.KNeighborsClassifier(n_neighbors=1)
+    knn.fit(Y_train, Z_train)
+    z_pred = knn.predict(Y_test)
+        #misclassified = Y_test[Z_test != z_pred]
+        #print "misclassified ones,", misclassified
+    print "accuracy score, ", accuracy_score(Z_test, z_pred)
+    print "confusion_matrix, "
+    print confusion_matrix(Z_test, z_pred)
+    #save(knn,'data.knn')
+    #save(scaler,'data.scaler')
     return knn, scaler
         #print classification_report(Z_test, z_pred)
-def temp():
-    get_all_types("all_data")
-    return train()
+def temp(Y, Z):
+
+    Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
+    scaler = preprocessing.StandardScaler()
+    Y_train = scaler.fit_transform(Y_train)
+    Y_test = scaler.transform(Y_test)
+    for n in range(1,20):
+        print n
+
+        knn = neighbors.KNeighborsClassifier(n_neighbors=n)
+        knn.fit(Y_train, Z_train)
+        z_pred = knn.predict(Y_test)
+            #misclassified = Y_test[Z_test != z_pred]
+            #print "misclassified ones,", misclassified
+        print "accuracy score, ", accuracy_score(Z_test, z_pred)
+    #misclassified = Y_test[Z_test != z_pred]
+    #print "misclassified ones,", misclassified
+    #print classification_report(Z_test, z_pred)
+        data_dict = window.create_dictionary("all_data")
+
+        window.test_window(knn, scaler, data_dict)
+
+    return knn, scaler
         
 def main():
     parser = argparse.ArgumentParser()
@@ -507,12 +735,26 @@ def main():
             overall_max(dataFrame,0)
             capture = overall_min(dataFrame,0)
     if args.test:
-            get_all_types("all_data")
 
 #            train2()
-            knn, scaler = train()
+            #knn, scaler = train()
+ #           Y = []
+#            Z = [] 
+#            get_all_types(Y, Z, "all_data")
+#            train(Y, Z)
+ ##            Z1 = []
+#            get_all_types(Y1,Z1,"all_data")
+#            print "y1,", Y1[0]
+            Y = []
+            Z = []
+#            get_all_types_window(Y,Z,"all_data")
+            get_all_types(Y,Z,"all_data")
 
-            train()
+            temp(Y,Z)
+ #           print "Y", Y[1]
+ #           train(Y,Z)
+#            temp(Y, Z)
+#
  #           classify()
 
 

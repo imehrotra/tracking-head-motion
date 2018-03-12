@@ -56,8 +56,9 @@ def flush(rotz,roty,uaccelz,xaccl):
     xaccl = []
 
 def threadAPI(conn, clientaddr, x, y):
-
-    knn, scaler = classify2.classify() 
+    Y = []
+    Z = []
+    knn, scaler = classify2.classify_with_window(Y, Z) # Change this to classify_with_window for other data...
     # knn = classify2.load('data.knn')
     # scaler = classify2.load('data.scaler')
     #count = 0
