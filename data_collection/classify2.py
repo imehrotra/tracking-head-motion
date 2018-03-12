@@ -11,8 +11,8 @@ import pickle
 import window
 import Metrics as met
 from sklearn import neighbors, datasets, preprocessing
-from sklearn.model_selection import train_test_split
-#from sklearn.cross_validation import train_test_split
+#from sklearn.model_selection import train_test_split
+from sklearn.cross_validation import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
@@ -137,13 +137,6 @@ def rot_txt2(filename):
             dicts_x.append(x)
             dicts_y.append(y)
             dicts_z.append(z)
-    if filename[:2] != "bk" and filename[:2] != "ns":
-        if len(dicts_x)>100:
-            return None
-        if len(dicts_x)>80:
-            dicts_x = dicts_x[20:-5]
-            dicts_y = dicts_y[20:-5]
-            dicts_z = dicts_z[20:-5]
 
         #print dataZ
     #return (dataX,dataZ)
@@ -162,11 +155,6 @@ def xyz_accl2(filename):
         for line in f:
             list_data.append(float(line))   
 
-    if filename[:2] != "bk" and filename[:2] != "ns":
-        if len(list_data)>100:
-            return None
-        if len(list_data)>80:        
-            list_data = list_data[20:-5]
 
  #   data = met.Metrics(in_min=np.min(list_data), in_max=np.max(list_data), in_mean=np.mean(list_data), in_dev=np.std(list_data), in_med=np.median(list_data))
     return (list_data)
@@ -259,15 +247,7 @@ def attitude_txt2(filename):
             dicts_z.append(z)
             dicts_w.append(w)
 
-    if filename[:2] != "bk" and filename[:2] != "ns":
-        if len(dicts_x)>100:
-            return None
-        if len(dicts_x)>80:
-            dicts_x = dicts_x[20:-5]
-            dicts_y = dicts_y[20:-5]
-            dicts_z = dicts_z[20:-5]
-            dicts_w = dicts_w[20:-5]
-
+ 
  #   dataX = met.Metrics(in_min=np.min(dicts_x), in_max=np.max(dicts_x), in_mean=np.mean(dicts_x), in_dev=np.std(dicts_x), in_med=np.median(dicts_x))
 #    dataY = met.Metrics(in_min=np.min(dicts_y), in_max=np.max(dicts_y), in_mean=np.mean(dicts_y), in_dev=np.std(dicts_y), in_med=np.median(dicts_y))
 #    dataZ = met.Metrics(in_min=np.min(dicts_z), in_max=np.max(dicts_z), in_mean=np.mean(dicts_z), in_dev=np.std(dicts_z), in_med=np.median(dicts_z))
@@ -295,7 +275,7 @@ def get_all_types_window(Y,Z,path):
  
         if (d["xaccl"] is not None) and (d["uaccl"] is not None) and (d["rot"] is not None):
             
-            if(len(d["xaccl"]) <= 50):
+            if(len(d["xaccl"]) <= 80):
                 tmp.append(np.std(d["xaccl"]))
                 tmp.append(np.max(d["xaccl"]))
                 tmp.append(np.std(d["uaccl"][2]))
@@ -306,7 +286,7 @@ def get_all_types_window(Y,Z,path):
                 Y.append(tmp)
                 Z.append(dict_labels[d["label"]])
             else:
-                
+
                 while(len(d["xaccl"]) > 50):
                       tmp = []
                       tempListA = d["xaccl"][:50]
@@ -652,7 +632,29 @@ def train2(Y, Z):
     print "accuracy score, ", accuracy_score(Z_test, z_pred)
     print "confusion_matrix, ", confusion_matrix(Z_test, z_pred)
     return model
+def classify_with_window(Y, Z):
+    '''
+    trains the data and prints the accuracy score
+'''
+    get_all_types_window(Y, Z, "all_data")
+    maxAccurate = 0;
+    Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
+    #scaler =  preprocessing.StandardScaler().fit(Y_train)
+    #Y_test = scaler.transform(Y_test)
+    scaler = preprocessing.StandardScaler()
+    Y_train = scaler.fit_transform(Y_train)
+    Y_test = scaler.transform(Y_test)
 
+    
+    knn = neighbors.KNeighborsClassifier(n_neighbors=1)
+    knn.fit(Y_train, Z_train)
+    z_pred = knn.predict(Y_test)
+        #misclassified = Y_test[Z_test != z_pred]
+        #print "misclassified ones,", misclassified
+    print "accuracy score, ", accuracy_score(Z_test, z_pred)
+    print "confusion_matrix, "
+    print confusion_matrix(Z_test, z_pred)
+    return knn, scaler
 
 def classify(Y, Z):
     '''
@@ -676,14 +678,12 @@ def classify(Y, Z):
     print "accuracy score, ", accuracy_score(Z_test, z_pred)
     print "confusion_matrix, "
     print confusion_matrix(Z_test, z_pred)
-    save(knn,'data.knn')
-    save(scaler,'data.scaler')
+    #save(knn,'data.knn')
+    #save(scaler,'data.scaler')
     return knn, scaler
         #print classification_report(Z_test, z_pred)
 def temp(Y, Z):
 
-
-    get_all_types(Y, Z, "all_data")
     Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
     scaler = preprocessing.StandardScaler()
     Y_train = scaler.fit_transform(Y_train)
@@ -747,7 +747,9 @@ def main():
 #            print "y1,", Y1[0]
             Y = []
             Z = []
-            get_all_types_window(Y,Z,"all_data")
+#            get_all_types_window(Y,Z,"all_data")
+            get_all_types(Y,Z,"all_data")
+
             temp(Y,Z)
  #           print "Y", Y[1]
  #           train(Y,Z)
