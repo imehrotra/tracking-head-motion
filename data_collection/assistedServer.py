@@ -91,7 +91,7 @@ def threadAPI(conn, clientaddr, x, y):
             tmp.append(n_xaccl.std())
             tmp.append(n_uaccelz.std())
             tmp.append(n_xaccl.max())
-            tmp.append(np.median(n_roty))
+            tmp.append(np.median(n_rotz))
             tmp.append(n_roty.mean())
             tmp.append(n_rotz.mean())
             tmp.append(n_rotz.min())
