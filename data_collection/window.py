@@ -335,7 +335,6 @@ def classify():
     print confusion_matrix(Z_test, z_pred)
     return knn, scaler
         #print classification_report(Z_test, z_pred)
->>>>>>> 9af2c93003ac64543abfa08a76c0e73dc1221cb4
 
 def toSingle(array,i):
         #takes 2D array and selects for one column i

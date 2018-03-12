@@ -415,7 +415,6 @@ def train(Y, Z):
         #print classification_report(Z_test, z_pred)
     print "best accuracy: ",maxAccurate," nearest neighbor:", index
     knn = neighbors.KNeighborsClassifier(n_neighbors=index)
-    knn.fit(scaler.transform(Y), Z)
 
     return knn, scaler
 
@@ -476,7 +475,6 @@ def classify(Y, Z):
 def temp(Y, Z):
 
 
-    get_all_types(Y, Z, "all_data")
     Y_train, Y_test, Z_train, Z_test = train_test_split(Y,Z,random_state = 0)
     scaler = preprocessing.StandardScaler()
     Y_train = scaler.fit_transform(Y_train)
@@ -535,8 +533,6 @@ def main():
             Z = [] 
             get_all_types(Y, Z, "all_data")
             train(Y, Z)
-            Y = []
-            Z = [] 
             temp(Y, Z)
 
  #           classify()
