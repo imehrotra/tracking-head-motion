@@ -69,53 +69,60 @@ def threadAPI(conn, clientaddr, x, y):
  #   ld = False
 #    rd = False
 
-
+    roty = []
+    rotz = []
+    uaccelz = []
+    xaccl = []
+    n_xaccl = []
+    n_uaccelz = []
+    n_roty = []
+    n_rotz = []
     while 1:
         # @Isha, can you check the size of data? 
         data = conn.recv(999999)
         if data == '\n':
             continue
-        roty = []
-        rotz = []
-        uaccelz = []
-        xaccl = [] 
-        print("Data: " + data)
+        if data == "All done":
+            n_roty = np.array(roty)
+            n_rotz = np.array(rot)
+            n_uaccelz = np.array(uaccelz)
+            n_xaccl = np.array(cxaccl)
+            tmp = []
+            tmp.append(n_xaccl.std())
+            tmp.append(n_uaccelz.std())
+            tmp.append(n_xaccl.max())
+            tmp.append(np.median(n_roty))
+            tmp.append(n_roty.mean())
+            tmp.append(n_rotz.mean())
+            tmp.append(n_rotz.min())
+            Features = []
+            Features.append(tmp)
 
-        for row in data:            
-            line = row.split(",")
-            print("Line 0: " + line[0])
+            print "features", Features
+            scaler.transform(Features)
+            label = knn.predict(Features)
+            print("result:", label)
+            if label == "right down" or label == "right up":
+                print "RIGHT TILT"
+            elif label == "left up" or label == "left down":
+                print "LEFT TILT"
+            else:
+                print "NOISY"
+            roty = []
+            rotz = []
+            uaccelz = []
+            xaccl = []
+            n_xaccl = []
+            n_uaccelz = []
+            n_roty = []
+            n_rotz = []
+        else:
+            line = data.split(",")
+            #print("Line 0: " + line[0])
             roty.append(float(line[0]))
             rotz.append(float(line[1]))
             uaccelz.append(float(line[2]))
             xaccl.append(float(line[3]))
-
-            # make into arrays
-        n_roty = np.array(roty)
-        n_rotz = np.array(rot)
-        n_uaccelz = np.array(uaccelz)
-        n_xaccl = np.array(cxaccl)
-        tmp = []
-        tmp.append(n_xaccl.std())
-        tmp.append(n_uaccelz.std())
-        tmp.append(n_xaccl.max())
-        tmp.append(np.median(n_roty))
-        tmp.append(n_roty.mean())
-        tmp.append(n_rotz.mean())
-        tmp.append(n_rotz.min())
-        Features = []
-        Features.append(tmp)
-
-        print "features", Features
-        scaler.transform(Features)
-        label = knn.predict(Features)
-        print("result:", label)
-
-        if label == "right down" or label == "right up":
-            print "RIGHT TILT"
-        elif label == "left up" or label == "left down":
-            print "LEFT TILT"
-        else:
-            print "NOISY"
 
 
     conn.close()
