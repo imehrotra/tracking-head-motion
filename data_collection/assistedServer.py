@@ -56,6 +56,7 @@ def flush(rotz,roty,uaccelz,xaccl):
     xaccl = []
 
 def threadAPI(conn, clientaddr, x, y):
+    mouseMove(643,447)
     Y = []
     Z = []
     knn, scaler = classify2.classify(Y, Z)#classify_with_window(Y, Z) # Change this to classify_with_window for other data...
@@ -109,9 +110,11 @@ def threadAPI(conn, clientaddr, x, y):
             label = knn.predict(Features)
             print("result:", label)
             if label == "right down" or label == "right up":
-                print "RIGHT TILT"
+                print "RIGHT TILT
+                keyPressR()
             elif label == "left up" or label == "left down":
                 print "LEFT TILT"
+                keyPressL()
             else:
                 print "NOISY"
             roty = []
