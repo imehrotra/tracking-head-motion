@@ -1,9 +1,9 @@
 import socket,os,sys,thread,argparse,threading
 #import parse
 import time
-#from pynput.mouse import Button, Controller
+#from pynput import mouse, keyboard
 #from pynput.keyboard import Key, Controller
-# from pynput import mouse, keyboard
+#from pynput.mouse import Button, Controller
 import classify2
 from sklearn import neighbors, datasets, preprocessing
 #from sklearn.model_selection import train_test_split
@@ -58,7 +58,7 @@ def flush(rotz,roty,uaccelz,xaccl):
 def threadAPI(conn, clientaddr, x, y):
     Y = []
     Z = []
-    knn, scaler = classify2.classify_with_window(Y, Z) # Change this to classify_with_window for other data...
+    knn, scaler = classify2.classify(Y, Z)#classify_with_window(Y, Z) # Change this to classify_with_window for other data...
     # knn = classify2.load('data.knn')
     # scaler = classify2.load('data.scaler')
     #count = 0

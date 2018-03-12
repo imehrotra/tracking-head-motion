@@ -94,13 +94,13 @@ def rot_txt(filename):
             dicts_x.append(x)
             dicts_y.append(y)
             dicts_z.append(z)
-    if filename[:2] != "bk" and filename[:2] != "ns":
-        if len(dicts_x)>100:
-            return None
-        if len(dicts_x)>80:
-            dicts_x = dicts_x[20:-5]
-            dicts_y = dicts_y[20:-5]
-            dicts_z = dicts_z[20:-5]
+    # if filename[:2] != "bk" and filename[:2] != "ns":
+    #     if len(dicts_x)>100:
+    #         return None
+    #     if len(dicts_x)>80:
+    #         dicts_x = dicts_x[20:-5]
+    #         dicts_y = dicts_y[20:-5]
+    #         dicts_z = dicts_z[20:-5]
 
 
     dataX = met.Metrics(in_min=np.min(dicts_x), in_max=np.max(dicts_x), in_mean=np.mean(dicts_x), in_dev=np.std(dicts_x), in_med=np.median(dicts_x))
@@ -172,11 +172,11 @@ def xyz_accl(filename):
         for line in f:
             list_data.append(float(line))   
 
-    if filename[:2] != "bk" and filename[:2] != "ns":
-        if len(list_data)>100:
-            return None
-        if len(list_data)>80:        
-            list_data = list_data[20:-5]
+    # if filename[:2] != "bk" and filename[:2] != "ns":
+    #     if len(list_data)>100:
+    #         return None
+    #     if len(list_data)>80:        
+    #         list_data = list_data[20:-5]
 
     data = met.Metrics(in_min=np.min(list_data), in_max=np.max(list_data), in_mean=np.mean(list_data), in_dev=np.std(list_data), in_med=np.median(list_data))
     return (data)
@@ -206,14 +206,14 @@ def attitude_txt(filename):
             dicts_z.append(z)
             dicts_w.append(w)
 
-    if filename[:2] != "bk" and filename[:2] != "ns":
-        if len(dicts_x)>100:
-            return None
-        if len(dicts_x)>80:
-            dicts_x = dicts_x[20:-5]
-            dicts_y = dicts_y[20:-5]
-            dicts_z = dicts_z[20:-5]
-            dicts_w = dicts_w[20:-5]
+    # if filename[:2] != "bk" and filename[:2] != "ns":
+    #     if len(dicts_x)>100:
+    #         return None
+    #     if len(dicts_x)>80:
+    #         dicts_x = dicts_x[20:-5]
+    #         dicts_y = dicts_y[20:-5]
+    #         dicts_z = dicts_z[20:-5]
+    #         dicts_w = dicts_w[20:-5]
 
     dataX = met.Metrics(in_min=np.min(dicts_x), in_max=np.max(dicts_x), in_mean=np.mean(dicts_x), in_dev=np.std(dicts_x), in_med=np.median(dicts_x))
     dataY = met.Metrics(in_min=np.min(dicts_y), in_max=np.max(dicts_y), in_mean=np.mean(dicts_y), in_dev=np.std(dicts_y), in_med=np.median(dicts_y))
@@ -670,7 +670,7 @@ def classify(Y, Z):
     Y_test = scaler.transform(Y_test)
 
     
-    knn = neighbors.KNeighborsClassifier(n_neighbors=1)
+    knn = neighbors.KNeighborsClassifier(n_neighbors=10) #Isha changed 1 to 10
     knn.fit(Y_train, Z_train)
     z_pred = knn.predict(Y_test)
         #misclassified = Y_test[Z_test != z_pred]
