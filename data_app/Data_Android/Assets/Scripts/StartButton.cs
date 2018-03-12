@@ -145,8 +145,8 @@ public class StartButton : MonoBehaviour {
 
 			// Send the buffer, clean it
 //			Debug.Log("Sending: " + input_buffer);
-//			writeSocket(input_buffer);
-//			send_cnt++;
+			writeSocket(input_buffer);
+			send_cnt++;
 
 			StreamWriter writer1 = new StreamWriter (path1, true);
 			writer1.WriteLine (xaccl);
@@ -186,11 +186,13 @@ public class StartButton : MonoBehaviour {
 			running = false;
 			run.text = "STOPPED";
 
-			string body = File.ReadAllText(Application.persistentDataPath + "/" + "send.txt");
-			Debug.Log("Sending: input_buffer");
-			writeSocket(body);
-			send_cnt++;
-			body = "";
+			writeSocket ("All done,");
+
+//			string body = File.ReadAllText(Application.persistentDataPath + "/" + "send.txt");
+//			Debug.Log("Sending: input_buffer");
+//			writeSocket(body);
+//			send_cnt++;
+//			body = "";
 //			input_buffer = "";
 		} else {
 			running = true;

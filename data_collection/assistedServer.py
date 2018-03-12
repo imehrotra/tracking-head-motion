@@ -82,16 +82,22 @@ def threadAPI(conn, clientaddr, x, y):
         data = conn.recv(999999)
         if data == '\n':
             continue
-        if data == "All done":
+
+        # print("Data: " + data)
+        line = data.split(",")
+
+        if line[0] == "All done":
+            # print("Line 0:" + line[0])
+            # print("entered")
             n_roty = np.array(roty)
-            n_rotz = np.array(rot)
+            n_rotz = np.array(rotz)
             n_uaccelz = np.array(uaccelz)
-            n_xaccl = np.array(cxaccl)
+            n_xaccl = np.array(xaccl)
             tmp = []
             tmp.append(n_xaccl.std())
             tmp.append(n_uaccelz.std())
             tmp.append(n_xaccl.max())
-            tmp.append(np.median(n_roty))
+            tmp.append(np.median(n_rotz))
             tmp.append(n_roty.mean())
             tmp.append(n_rotz.mean())
             tmp.append(n_rotz.min())
@@ -117,8 +123,7 @@ def threadAPI(conn, clientaddr, x, y):
             n_roty = []
             n_rotz = []
         else:
-            line = data.split(",")
-            #print("Line 0: " + line[0])
+            # line = data.split(",")
             roty.append(float(line[0]))
             rotz.append(float(line[1]))
             uaccelz.append(float(line[2]))
