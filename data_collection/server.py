@@ -90,12 +90,12 @@ def threadAPI(conn, clientaddr, x, y):
         # print("Data Time: " + line[4])
         # print("Curr Time: ", time.localtime().tm_min, time.localtime().tm_sec) 
         # print("Counter: " + line[5]) 
-        if (len(roty) > 50):
+        if (len(roty) > 75):
             # Get first 50
-            cur_roty = roty[:50]
-            cur_rotz = rotz[:50]
-            cur_uaccelz = uaccelz[:50]
-            cur_xaccl = xaccl[:50]
+            cur_roty = roty[:75]
+            cur_rotz = rotz[:75]
+            cur_uaccelz = uaccelz[:75]
+            cur_xaccl = xaccl[:75]
 
             # deleted first 25
             del roty[:10]            
