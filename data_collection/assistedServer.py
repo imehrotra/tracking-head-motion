@@ -1,9 +1,9 @@
 import socket,os,sys,thread,argparse,threading
 #import parse
 import time
-#from pynput import mouse, keyboard
-#from pynput.keyboard import Key, Controller
-#from pynput.mouse import Button, Controller
+from pynput import mouse, keyboard
+from pynput.keyboard import Key, Controller
+from pynput.mouse import Button, Controller
 import classify2
 from sklearn import neighbors, datasets, preprocessing
 #from sklearn.model_selection import train_test_split
@@ -110,10 +110,12 @@ def threadAPI(conn, clientaddr, x, y):
             label = knn.predict(Features)
             print("result:", label)
             if label == "right down" or label == "right up":
-                print "RIGHT TILT
+                print "RIGHT TILT"
+                mouseMove(843,447)
                 keyPressR()
             elif label == "left up" or label == "left down":
                 print "LEFT TILT"
+                mouseMove(443,447)
                 keyPressL()
             else:
                 print "NOISY"
