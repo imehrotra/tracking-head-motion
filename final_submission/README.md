@@ -18,16 +18,21 @@ Contains functionality for start/stop button and toggles. Stores data in text fi
 
 All the Python classification files are in the PyScripts folder.
 
-### AssistedServer.py
+### assistedServer.py
+Server for "assisted live-streaming." Rather than using an overlapping, uniform frame approach, this server will receive sensor data until the client tells it to stop. Then, it will use the classifer from classify2.py to label the data, and trigger a computer event.
 
-### Server.py
+### server.py
+Server for true real-time streaming. Continuously receives sensor data from client, and segments data with overlap to ensure that the action of interest is not missed. It will then use classifer from classify2.py to label the data, and trigger a computer event.
 
-### Classify2.py
+### classify2.py
+Contains the code for training the classifier. Functions support two ways of training: (1) separate files into uniform overlapping frames to use for training; (2) use raw files (each with single isolated tilt) for training
 
-### Metrics.py
+### metrics.py
+Contains data structure for the different features of importance
 
-### Window.py
+### window.py
+Contains code specific to the window method, i.e. the uniform, overlapping frames method.
 
-### Utils.py
-
+### utils.py
+Contains general utility code, as well as code that was used earlier in the process for testing and feature extraction
 
