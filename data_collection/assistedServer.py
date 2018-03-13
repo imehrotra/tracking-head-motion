@@ -1,5 +1,4 @@
 import socket,os,sys,thread,argparse,threading
-#import parse
 import time
 from pynput import mouse, keyboard
 from pynput.keyboard import Key, Controller
@@ -15,23 +14,29 @@ import Metrics as met
 import csv
 import numpy as np
 
-'''
-Presses right arrow key
-'''
+
 def keyPressR():
+    '''
+    Presses right arrow key
+    '''
     keyB = keyboard.Controller()
     keyB.press(keyboard.Key.right)
     keyB.release(keyboard.Key.right)
     
-'''
-Presses left arrow key
-'''
 def keyPressL():
+    '''
+    Presses left arrow key
+    '''
+
     keyB = keyboard.Controller()
     keyB.press(keyboard.Key.left)
     keyB.release(keyboard.Key.left)
 
 def keyPressAltTab():
+    '''
+    Presses alt tab
+    '''
+
     keyB = keyboard.Controller()
     keyB.press(keyboard.Key.alt)
     keyB.press(keyboard.Key.tab)
@@ -39,10 +44,11 @@ def keyPressAltTab():
     keyB.release(keyboard.Key.alt)
 
 
-'''
-input x and y coordinates on screen to click
-'''
+
 def mouseClick(x,y):
+    '''
+    input x and y coordinates on screen to click
+    '''
     cursor = mouse.Controller()
     
     # Set pointer position
@@ -52,20 +58,22 @@ def mouseClick(x,y):
     # click, set 2 for double click
     cursor.click(mouse.Button.left, 1)
 
-'''
-moves mouse
-'''
+
 def mouseMove(x,y):
+    '''
+    moves mouse
+    '''
     cursor = mouse.Controller()
     
     # Set pointer position
     cursor.position = (x,y)
 
-'''
-Spawned thread handling classifying head motions
-Triggers computer event based on classification result
-'''
+
 def threadAPI(conn, clientaddr, x, y):
+    '''
+    Spawned thread handling classifying head motions
+    Triggers computer event based on classification result
+    '''
     #initialize classifier
     Y = []
     Z = []

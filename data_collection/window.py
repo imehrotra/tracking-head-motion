@@ -1,4 +1,3 @@
-import pandas as pd
 import numpy as np
 import sys
 import os
@@ -16,267 +15,63 @@ from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 from sklearn import tree
 from sklearn.ensemble import ExtraTreesClassifier
-
-epsilon = 0.000001
-#global variables for storing training
-Y = []
-Z = []
-#global variables for storing training
-
 from itertools import izip_longest
 
 
 def toSingle(array,i):
-        #takes 2D array and selects for one column i
-        dicts = []
-        for each in array:
-                dicts.append(each[i])
-
-        #print dicts
-        return dicts
-        
-def rot_txt(filename):
-  '''
-  Input: A path to a accl and rotation textfile
-  Return: a Metric 
-  '''
-  with open(filename, "r") as f:
-    if not ".txt" in filename:
-      print(filename + " not a txt file")
-      return None
+    '''
+    takes 2D array and selects for one column i
+    '''
     dicts = []
-    for line in f:
-        structure = re.split('([(]?)(.*?)([)]?)(,|$)',line)
-        list1 = []
-        x = float(structure[2])
-        y = float(structure[7])
-        z = float(structure[12])
-        #if (abs(0-x) < epsilon) and (abs(0-y) < epsilon) and (abs(0-z) < epsilon):
-        if 0:
-                continue
-        else:
-                list1.append(float(structure[2]))
-                list1.append(float(structure[7]))
-                list1.append(float(structure[12]))
-                dicts.append(list1)
-    dicts = np.array([np.array(xi) for xi in dicts])
-    dicts_x = toSingle(dicts,0)
-    dicts_y = toSingle(dicts,1)
-    dicts_z = toSingle(dicts,2)
+    for each in array:
+            dicts.append(each[i])
 
+    return dicts
 
-        #print dataZ
-    #return (dataX,dataZ)
-    return (dicts_x,dicts_y,dicts_z)
-def xyz_accl(filename):
+def count_print(knn, scaler, data_dict, label):
     '''
-    Input: A path to x, y, or z accl, which only has one value
-    Return: a metric
+    Helper function for test_window; iterates over dictionary and runs on
+    all files with given label
     '''
-    with open(filename, "r") as f:
-        if not ".txt" in filename:
-            print(filename + " not a txt file")
-            return None
-        list_data = []
-        for line in f:
-            list_data.append(float(line))    
-    return (list_data)
-def attitude_txt(filename):
-    '''
-    Input: A path to attitude
-    Return: a metric
-    '''
-    with open(filename, "r") as f:
-        if not ".txt" in filename:
-            print(filename + " not a txt file")
-            return None
-        dicts = []
-        for line in f:
-            structure = re.split('([(]?)(.*?)([)]?)(,|$)',line)
-            list1 = []
-            x = float(structure[2])
-            y = float(structure[7])
-            z = float(structure[12])
-            #if (abs(0-x) < epsilon) and (abs(0-y) < epsilon) and (abs(0-z) < epsilon):
-        #                               continue
-        #                       else:
-            list1.append(float(structure[2]))
-            list1.append(float(structure[7]))
-            list1.append(float(structure[12]))
-            list1.append(float(structure[17]))
-            dicts.append(list1)
-    dicts = np.array([np.array(xi) for xi in dicts])
-    dicts_x = toSingle(dicts,0)
-    dicts_y = toSingle(dicts,1)
-    dicts_z = toSingle(dicts,2)
-    dicts_w = toSingle(dicts,3)
-   #print dataZ
-    return (dicts_x,dicts_y,dicts_x,dicts_w)
-
-
-def extract_data(d, filename, path):
-    '''
-    Given filename, extract that particular type of data by assigning a Metric
-    to a dictionary.... at the end we'll have a dictionary of metrics. Each dict value
-    is a tuple, with at least one Metric
-    '''
-    fullname = os.path.join(path,filename)
-    data_type = filename[3]
-    # 5* (1 * 3 + 3*2 + 4) = 65 features 
-    if (data_type == "x"):
-        d["xaccl"] = xyz_accl(fullname) 
-
-    elif (data_type == "y"):
-        d["yaccl"] = xyz_accl(fullname)
-
-    elif (data_type == "z"):
-        d["zaccl"] = xyz_accl(fullname) 
-
-    elif (data_type == "r"):
-        d["rot"] = rot_txt(fullname)
-
-    elif (data_type == "a"):            
-        d["att"] = attitude_txt(fullname)
-
-    elif (data_type == "u"):
-        d["uaccl"] = rot_txt(fullname) #like rot, user Accl has 3 places...
-
-
-def create_dictionary(path):
-    '''
-    {"DATE": {"label": ACTION_LABEL, "rot": [], "xaccl": [], "yaccl": [], "zAccl": [], "attitude": [], "uAccl: []"}}
-    '''
-    data_type = ["label", "rot", "xaccl", "yaccl", "zaccl", "att", "uaccl"]
-    data_dict = {}
-    for filename in os.listdir(path):
-        date = filename[-14: -4]
-        d = data_dict.get(date)
-        if d is None:
-            d = dict.fromkeys(data_type)
-            d["label"] = filename[:2]
-            
-            data_dict[date] = d
-        extract_data(d, filename, path) #Have to implement this
-    return data_dict
-
+    count_lu = 0
+    count_ld = 0
+    count_rd = 0
+    count_ru = 0
+    count_n = 0
+    for date_key, d in data_dict.items():
+        if d["rot"]==None or d["uaccl"] == None or d["xaccl"] == None:
+            continue
+        if d["label"] == label:
+            lu, ld, rd, ru, n = window(knn, scaler, d)
+            count_lu += lu
+            count_ld += ld
+            count_rd += rd
+            count_ru += ru
+            count_n += n
+    print label
+    print ("left u:", count_lu )
+    print ("left d:", count_ld )
+    print ("right u:", count_ru )
+    print ("right d:", count_rd )
+    print ("noisy:", count_n )
 
 def test_window(knn, scaler, data_dict):
-    count_lu = 0
-    count_ld = 0
-    count_rd = 0
-    count_ru = 0
-    count_n = 0  
-    for date_key, d in data_dict.items():
-        if d["rot"]==None or d["uaccl"] == None or d["xaccl"] == None:
-            continue
-        if d["label"] == "lu":
-            #print "lu"
-            lu, ld, rd, ru, n = window(knn, scaler, d)
-            count_lu += lu
-            count_ld += ld
-            count_rd += rd
-            count_ru += ru
-            count_n += n
-    print "lu"
-    print ("left u:", count_lu )
-    print ("left d:", count_ld )
-    print ("right u:", count_ru )
-    print ("right d:", count_rd )
-    print ("noisy:", count_n )
-
-    count_lu = 0
-    count_ld = 0
-    count_rd = 0
-    count_ru = 0
-    count_n = 0
-    for date_key, d in data_dict.items():
-        if d["rot"]==None or d["uaccl"] == None or d["xaccl"] == None:
-            continue
-        if d["label"] == "ld":
-            #print "lu"
-            lu, ld, rd, ru, n = window(knn, scaler, d)
-            count_lu += lu
-            count_ld += ld
-            count_rd += rd
-            count_ru += ru
-            count_n += n
-    print "ld"
-    print ("left u:", count_lu )
-    print ("left d:", count_ld )
-    print ("right u:", count_ru )
-    print ("right d:", count_rd )
-    print ("noisy:", count_n )
-
-    count_lu = 0
-    count_ld = 0
-    count_rd = 0
-    count_ru = 0
-    count_n = 0
-    for date_key, d in data_dict.items():
-        if d["rot"]==None or d["uaccl"] == None or d["xaccl"] == None:
-            continue
-        if d["label"] == "ru":
-            #print "lu"
-            lu, ld, rd, ru, n = window(knn, scaler, d)
-            count_lu += lu
-            count_ld += ld
-            count_rd += rd
-            count_ru += ru
-            count_n += n
-    print "ru"
-    print ("left u:", count_lu )
-    print ("left d:", count_ld )
-    print ("right u:", count_ru )
-    print ("right d:", count_rd )
-    print ("noisy:", count_n )
-
-    count_lu = 0
-    count_ld = 0
-    count_rd = 0
-    count_ru = 0
-    count_n = 0
-    for date_key, d in data_dict.items():
-        if d["rot"]==None or d["uaccl"] == None or d["xaccl"] == None:
-            continue
-        if d["label"] == "rd":
-            #print "lu"
-            lu, ld, rd, ru, n = window(knn, scaler, d)
-            count_lu += lu
-            count_ld += ld
-            count_rd += rd
-            count_ru += ru
-            count_n += n
-    print "rd"
-    print ("left u:", count_lu )
-    print ("left d:", count_ld )
-    print ("right u:", count_ru )
-    print ("right d:", count_rd )
-    print ("noisy:", count_n )
-
-    count_lu = 0
-    count_ld = 0
-    count_rd = 0
-    count_ru = 0
-    count_n = 0
-
-    for date_key, d in data_dict.items():
-        if d["label"] == "ns":
-            #print "lu"
-            lu, ld, ru, rd, n = window(knn, scaler, d)
-            count_lu += lu
-            count_ld += ld
-            count_rd += rd
-            count_ru += ru
-            count_n += n
-    print "ns"
-    print ("left u:", count_lu )
-    print ("left d:", count_ld )
-    print ("right u:", count_ru )
-    print ("right d:", count_rd )
-    print ("noisy:", count_n )
+    '''
+    Runs the segmentation algorithm over data stored in dictionary to see if 
+    uniform frames results in accurate classification
+    '''
+    count_print(knn, scaler, data_dict, "ru")
+    count_print(knn, scaler, data_dict, "rd")
+    count_print(knn, scaler, data_dict, "lu")
+    count_print(knn, scaler, data_dict, "rd")
+    count_print(knn, scaler, data_dict, "ns")
 
 
 def window(knn, scaler, d):
+    '''
+    Segments given data lists into uniform, overlapping frames, and tries to 
+    classify
+    '''
     roty = d["rot"][1]
     rotz = d["rot"][2]
     uaccelz = d["uaccl"][2]
@@ -360,14 +155,7 @@ def window(knn, scaler, d):
 
         
 def main():
-#            train2()
     pass
-    # data_dict = create_dictionary("all_data")
-
-    # for n in range(1,20):
-    #     print n
-    #     knn, scaler = classify2.temp(n) #train()
-    #     test_window(knn, scaler, data_dict)
 
 
 if __name__ == '__main__':
