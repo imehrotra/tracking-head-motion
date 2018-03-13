@@ -129,7 +129,7 @@ def rot_txt2(filename):
         dicts_x.append(x)
         dicts_y.append(y)
         dicts_z.append(z)
-   return (dicts_x,dicts_y,dicts_z)
+    return (dicts_x,dicts_y,dicts_z)
 
 def xyz_accl2(filename):
     '''
@@ -144,7 +144,7 @@ def xyz_accl2(filename):
         list_data = []
         for line in f:
             list_data.append(float(line))   
-  return (list_data)
+    return (list_data)
 
 def xyz_accl(filename):
     '''
