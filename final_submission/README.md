@@ -14,7 +14,7 @@ Contains basic functionality of reset button for counter (used to assist data co
 Contains functionality for start/stop button and toggles. Stores data in text file for data collection app and sends necessary data over established socket connection for real-time app.
 
 
-### Classification
+## Classification
 
 All the Python classification files are in the PyScripts folder.
 
