@@ -27,6 +27,14 @@ def keyPressL():
     keyB.press(keyboard.Key.left)
     keyB.release(keyboard.Key.left)
 
+def keyPressAltTab():
+    keyB = keyboard.Controller()
+    keyB.press(keyboard.Key.alt)
+    keyB.press(keyboard.Key.tab)
+    keyB.release(keyboard.Key.tab)
+    keyB.release(keyboard.Key.alt)
+
+
 '''
 input x and y coordinates on screen to click
 '''
@@ -111,12 +119,24 @@ def threadAPI(conn, clientaddr, x, y):
             print("result:", label)
             if label == "right down" or label == "right up":
                 print "RIGHT TILT"
-                mouseMove(843,447)
+
+                keyPressAltTab()
+                time.sleep(2)
                 keyPressR()
+
+                # Alternative: move mouse
+                # mouseMove(843,447)
+
             elif label == "left up" or label == "left down":
                 print "LEFT TILT"
-                mouseMove(443,447)
+
+                keyPressAltTab()
+                time.sleep(2)
                 keyPressL()
+
+                # Alternative: move mouse
+                #mouseMove(443,447)
+
             else:
                 print "NOISY"
             roty = []
