@@ -87,8 +87,12 @@ def xyz_accl(filename):
         list_data = []
         for line in f:
             list_data.append(float(line))   
+<<<<<<< HEAD
     data = met.Metrics(in_min=np.min(list_data), in_max=np.max(list_data), in_mean=np.mean(list_data), in_dev=np.std(list_data), in_med=np.median(list_data))
     return (data)
+=======
+    return (list_data)
+>>>>>>> 12f317eb14c35e51cc4e0356f26c475048bc1487
 
 def window_xyz_accl(filename):
     '''

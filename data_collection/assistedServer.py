@@ -34,7 +34,7 @@ def keyPressL():
 
 def keyPressAltTab():
     '''
-    Presses alt tab
+    Switches windows with alt-tab
     '''
 
     keyB = keyboard.Controller()
@@ -127,6 +127,7 @@ def threadAPI(conn, clientaddr, x, y):
             if label == "right down" or label == "right up":
                 print "RIGHT TILT"
 
+                # Switch windows and move slide right
                 keyPressAltTab()
                 time.sleep(2)
                 keyPressR()
@@ -137,6 +138,7 @@ def threadAPI(conn, clientaddr, x, y):
             elif label == "left up" or label == "left down":
                 print "LEFT TILT"
 
+                # Switch windows and move slide left
                 keyPressAltTab()
                 time.sleep(2)
                 keyPressL()
@@ -179,7 +181,7 @@ def main():
         port = 8081
     else:
         port = int(args.port)
-        
+ 
     #hostname, localhost
     host = ''
 
@@ -206,7 +208,7 @@ def main():
         conn, clientaddr = server.accept()
 
         # create a thread to handle request
-        thread.start_new_thread(threadAPI, (conn, clientaddr,x,y))
+        thread.start_new_thread(threadAPI, (conn, clientaddr,0,0))
                    
     server.close()
     return 0

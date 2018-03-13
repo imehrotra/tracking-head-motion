@@ -9,6 +9,7 @@ using System.Text;
 
 public static class MyExtensions
 {
+	/* Appends timestamp to file name */
 	public static string AppendTimeStamp(this string fileName)
 	{
 		return string.Concat (
@@ -26,8 +27,7 @@ public class StartButton : MonoBehaviour {
 
 	public Text run;
 	public Text counter;
-	string direction = "lu";
-
+	string direction = "lu"; // default set to left up
 
 	// network vars
 	public String host = "localhost";
@@ -41,23 +41,17 @@ public class StartButton : MonoBehaviour {
 	StreamWriter socket_writer;
 	StreamReader socket_reader;
 
+	// keep track of number of data packets sent
 	int send_cnt = 0;
 
 	void Start()
 	{
+		// initialize vars to GameObjects
 		run = GameObject.Find("RunningText").GetComponent<Text>();
 		counter = GameObject.Find("Counter").GetComponent<Text>();
-
-		path1 = Application.persistentDataPath + "/" + direction + "_xaccl.txt".AppendTimeStamp();
-		path2 = Application.persistentDataPath + "/" + direction + "_yaccl.txt".AppendTimeStamp();
-		path3 = Application.persistentDataPath + "/" + direction + "_zaccl.txt".AppendTimeStamp();
-		path4 = Application.persistentDataPath + "/" + direction + "_attitude.txt".AppendTimeStamp();
-		path5 = Application.persistentDataPath + "/" + direction + "_rotrate.txt".AppendTimeStamp();
-		path6 = Application.persistentDataPath + "/" + direction + "_userAccl.txt".AppendTimeStamp();
-		path7 = Application.persistentDataPath + "/" + "send.txt".AppendTimeStamp();
-
 	}
 
+	/* Set path for new file */
 	void NewPath() {
 		path1 = Application.persistentDataPath + "/" + direction + "_xaccl.txt".AppendTimeStamp();
 		path2 = Application.persistentDataPath + "/" + direction + "_yaccl.txt".AppendTimeStamp();
@@ -73,6 +67,7 @@ public class StartButton : MonoBehaviour {
 	{
 		var toggleGroup = GameObject.Find("Canvas").GetComponent<ToggleGroup>();
 
+		// set direction var given current toggle state (used to name files)
 		foreach (Toggle t in toggleGroup.ActiveToggles()) {
 			if (t.isOn == true) {
 				switch (t.name) {
@@ -101,27 +96,24 @@ public class StartButton : MonoBehaviour {
 					direction = "lu";
 					break;
 				}
-//				Debug.Log (t.name);
 				break;
 			}
 		}
 
+		// accelerometer data
 		float xaccl = Input.acceleration.x;
 		float yaccl = Input.acceleration.y;
 		float zaccl = Input.acceleration.z;
 		Input.gyro.enabled = true;
 
-
-
+		// print received data in log
 		string received_data = readSocket();
 		if (received_data != "")
 		{
-			// Do something with the received data,
-			// print it in the log for now
 			Debug.Log(received_data);
 		}
 
-		// TODO put data in buffer
+		// Put gyro + accl data in buffer
 		input_buffer = Input.gyro.rotationRateUnbiased.y.ToString() + ",";
 		input_buffer += Input.gyro.rotationRateUnbiased.z.ToString () + ",";
 		input_buffer += Input.gyro.userAcceleration.z.ToString () + ",";
@@ -129,25 +121,14 @@ public class StartButton : MonoBehaviour {
 		input_buffer += DateTime.Now.ToString("mmss") + ",";
 		input_buffer += send_cnt.ToString () + ",";
 
-//		input_buffer += "\n";
-
-//		ASCIIEncoding ascii = new ASCIIEncoding();
-//		Debug.Log("Byte Count:" + ascii.GetByteCount(input_buffer));
-
-//		// Send the buffer, clean it
-//		Debug.Log("Sending: " + input_buffer);
-//		writeSocket(input_buffer);
-//		input_buffer = "";
-
-
-		// if running, write data to txt files
+		// if running, write data to txt files and send data
 		if (running) {
 
 			// Send the buffer, clean it
-//			Debug.Log("Sending: " + input_buffer);
 			writeSocket(input_buffer);
 			send_cnt++;
 
+			// write data to separate txt files
 			StreamWriter writer1 = new StreamWriter (path1, true);
 			writer1.WriteLine (xaccl);
 			writer1.Close ();
@@ -177,27 +158,26 @@ public class StartButton : MonoBehaviour {
 			writer7.Close ();
 		}
 
+		// empty buffer
 		input_buffer = "";
 	}
 
+	/* Function called when start button clicked */
 	public void TaskOnClick() {
+		
 		Debug.Log("You clicked the button");
-		if (running) {
+
+		if (running) { // when click stop
 			running = false;
 			run.text = "STOPPED";
 
 			writeSocket ("All done,");
 
-//			string body = File.ReadAllText(Application.persistentDataPath + "/" + "send.txt");
-//			Debug.Log("Sending: input_buffer");
-//			writeSocket(body);
-//			send_cnt++;
-//			body = "";
-//			input_buffer = "";
-		} else {
+		} else { // when click start
 			running = true;
 			run.text = "RUNNING";
 
+			// increment counter in display
 			int cnt = Int32.Parse(counter.text);
 			cnt++;
 			counter.text = cnt.ToString ();
@@ -207,17 +187,19 @@ public class StartButton : MonoBehaviour {
 	}
 
 
-
+	/* Initialize socket when program loads */
 	void Awake()
 	{
 		setupSocket();
 	}
 
+	/* Close socket when application stops */
 	void OnApplicationQuit()
 	{
 		closeSocket();
 	}
 
+	/* Create TCP Socket */
 	public void setupSocket()
 	{
 		try
@@ -237,6 +219,7 @@ public class StartButton : MonoBehaviour {
 		}
 	}
 
+	/* Send line of data */
 	public void writeSocket(string line)
 	{
 		if (!socket_ready)
@@ -247,6 +230,7 @@ public class StartButton : MonoBehaviour {
 		socket_writer.Flush();
 	}
 
+	/* Read line of data */
 	public String readSocket()
 	{
 		if (!socket_ready)
@@ -258,6 +242,7 @@ public class StartButton : MonoBehaviour {
 		return "";
 	}
 
+	/* Close the socket */
 	public void closeSocket()
 	{
 		if (!socket_ready)
