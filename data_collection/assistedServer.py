@@ -14,6 +14,7 @@ from sklearn.feature_selection import chi2
 import Metrics as met
 import csv
 import numpy as np
+
 '''
 Presses right arrow key
 '''
@@ -21,7 +22,10 @@ def keyPressR():
     keyB = keyboard.Controller()
     keyB.press(keyboard.Key.right)
     keyB.release(keyboard.Key.right)
-
+    
+'''
+Presses left arrow key
+'''
 def keyPressL():
     keyB = keyboard.Controller()
     keyB.press(keyboard.Key.left)
@@ -49,27 +53,17 @@ def mouseMove(x,y):
     # Set pointer position
     cursor.position = (x,y)
 
-def flush(rotz,roty,uaccelz,xaccl):
-    rotz = []
-    roty = []
-    uaccelz = []
-    xaccl = []
-
+'''
+Spawned thread handling classifying head motions
+Triggers computer event based on classification result
+'''
 def threadAPI(conn, clientaddr, x, y):
-    mouseMove(643,447)
+    #initialize classifier
     Y = []
     Z = []
-    knn, scaler = classify2.classify(Y, Z)#classify_with_window(Y, Z) # Change this to classify_with_window for other data...
-    # knn = classify2.load('data.knn')
-    # scaler = classify2.load('data.scaler')
-    #count = 0
-    #test = 0
-    #test2 = 0
-    
+    knn, scaler = classify2.classify(Y, Z)
 
- #   ld = False
-#    rd = False
-
+    #Classification variables
     roty = []
     rotz = []
     uaccelz = []
@@ -78,18 +72,20 @@ def threadAPI(conn, clientaddr, x, y):
     n_uaccelz = []
     n_roty = []
     n_rotz = []
+
+    #Loop for listening server
     while 1:
-        # @Isha, can you check the size of data? 
         data = conn.recv(999999)
+
         if data == '\n':
             continue
 
-        # print("Data: " + data)
         line = data.split(",")
 
+        #client is done sending all data for one classification test
         if line[0] == "All done":
-            # print("Line 0:" + line[0])
-            # print("entered")
+
+            #extract relevant features to run test on
             n_roty = np.array(roty)
             n_rotz = np.array(rotz)
             n_uaccelz = np.array(uaccelz)
@@ -104,11 +100,14 @@ def threadAPI(conn, clientaddr, x, y):
             tmp.append(n_rotz.min())
             Features = []
             Features.append(tmp)
-
             print "features", Features
+
+            #Run classification algorithm on features
             scaler.transform(Features)
             label = knn.predict(Features)
             print("result:", label)
+
+            #computer event based on classification decision
             if label == "right down" or label == "right up":
                 print "RIGHT TILT"
                 mouseMove(843,447)
@@ -119,6 +118,8 @@ def threadAPI(conn, clientaddr, x, y):
                 keyPressL()
             else:
                 print "NOISY"
+
+            #clear classification variables for next test
             roty = []
             rotz = []
             uaccelz = []
@@ -128,13 +129,12 @@ def threadAPI(conn, clientaddr, x, y):
             n_roty = []
             n_rotz = []
         else:
-            # line = data.split(",")
             roty.append(float(line[0]))
             rotz.append(float(line[1]))
             uaccelz.append(float(line[2]))
             xaccl.append(float(line[3]))
 
-
+    #close socket connection
     conn.close()
 
 
@@ -145,26 +145,14 @@ def main():
     # parse command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('-p','--port',help = 'The port server listens on')
-    parser.add_argument('-x','--x',help = 'The x coordinate of click')
-    parser.add_argument('-y','--y',help = 'The y coordinate of click')
     args = parser.parse_args()
 
     if args.port is None:
         port = 8081
     else:
         port = int(args.port)
-
-    if args.x:
-        x = args.x
-    else:
-        x = 1000
-
-    if args.y:
-        y = args.y
-    else:
-        y = 800
         
-    #hostname
+    #hostname, localhost
     host = ''
 
     # create a server socket with host and port
