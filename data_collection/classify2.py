@@ -18,17 +18,12 @@ from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 from sklearn import tree
 from sklearn.ensemble import ExtraTreesClassifier
+from itertools import izip_longest
 
 #recognifure as necessary
 dump_path = ""#'data_collection/'
-epsilon = 0.000001
 
-#global variables for storing training
-
-
-from itertools import izip_longest
-
-
+#saving knn classification object, so it can be loaded
 def save(data, filename):
     if not path.exists(dump_path):
         makedirs(dump_path)
@@ -37,13 +32,14 @@ def save(data, filename):
     pickle.dump(data, fileObject)
     fileObject.close()
 
-
+#load knn classification object
 def load(filename):
     filename = path.join(dump_path, filename)
     fileObject = open(filename, 'rb')
     return pickle.load(fileObject)
 
-
+#Obsolete functions no longer used (might come in handy)
+'''
 def grouper(n, iterable, fillvalue=None):
     "Collect data into fixed-length chunks or blocks"
     # grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx
@@ -68,10 +64,11 @@ def toSingle(array,i):
 
         #print dicts
         return dicts
-        
+'''
+
 def rot_txt(filename):
   '''
-  Input: A path to a accl and rotation textfile
+  Input: A path to a accl and rotation textfile. Parses for key values
   Return: a Metric 
   '''
   with open(filename, "r") as f:
@@ -87,13 +84,10 @@ def rot_txt(filename):
         x = float(structure[2])
         y = float(structure[7])
         z = float(structure[12])
-        #if (abs(0-x) < epsilon) and (abs(0-y) < epsilon) and (abs(0-z) < epsilon):
-        if 0:
-                continue
-        else:
-            dicts_x.append(x)
-            dicts_y.append(y)
-            dicts_z.append(z)
+        
+        dicts_x.append(x)
+        dicts_y.append(y)
+        dicts_z.append(z)
     # if filename[:2] != "bk" and filename[:2] != "ns":
     #     if len(dicts_x)>100:
     #         return None
@@ -115,7 +109,8 @@ def rot_txt(filename):
 def rot_txt2(filename):
   '''
   Input: A path to a accl and rotation textfile
-  Return: a Metric 
+  Return: a Metric
+  Modified version that is employed to train knn algorithm in sliding window manner
   '''
   with open(filename, "r") as f:
     if not ".txt" in filename:
@@ -130,22 +125,17 @@ def rot_txt2(filename):
         x = float(structure[2])
         y = float(structure[7])
         z = float(structure[12])
-        #if (abs(0-x) < epsilon) and (abs(0-y) < epsilon) and (abs(0-z) < epsilon):
-        if 0:
-                continue
-        else:
-            dicts_x.append(x)
-            dicts_y.append(y)
-            dicts_z.append(z)
 
-        #print dataZ
-    #return (dataX,dataZ)
-    return (dicts_x,dicts_y,dicts_z)
+        dicts_x.append(x)
+        dicts_y.append(y)
+        dicts_z.append(z)
+   return (dicts_x,dicts_y,dicts_z)
 
 def xyz_accl2(filename):
     '''
     Input: A path to x, y, or z accl, which only has one value
     Return: a metric
+    Modified version that is employed to train knn algorithm in sliding window manner
     '''
     with open(filename, "r") as f:
         if not ".txt" in filename:
@@ -154,10 +144,7 @@ def xyz_accl2(filename):
         list_data = []
         for line in f:
             list_data.append(float(line))   
-
-
- #   data = met.Metrics(in_min=np.min(list_data), in_max=np.max(list_data), in_mean=np.mean(list_data), in_dev=np.std(list_data), in_med=np.median(list_data))
-    return (list_data)
+  return (list_data)
 
 def xyz_accl(filename):
     '''
@@ -219,13 +206,14 @@ def attitude_txt(filename):
     dataY = met.Metrics(in_min=np.min(dicts_y), in_max=np.max(dicts_y), in_mean=np.mean(dicts_y), in_dev=np.std(dicts_y), in_med=np.median(dicts_y))
     dataZ = met.Metrics(in_min=np.min(dicts_z), in_max=np.max(dicts_z), in_mean=np.mean(dicts_z), in_dev=np.std(dicts_z), in_med=np.median(dicts_z))
     dataW = met.Metrics(in_min=np.min(dicts_w), in_max=np.max(dicts_w), in_mean=np.mean(dicts_w), in_dev=np.std(dicts_w), in_med=np.median(dicts_w))
-    #print dataZ
+
     return (dataX,dataY,dataZ,dataW)
 
 def attitude_txt2(filename):
     '''
     Input: A path to attitude
     Return: a metric
+    Modified version that is employed to train knn algorithm in sliding window manner
     '''
     with open(filename, "r") as f:
         if not ".txt" in filename:
@@ -246,15 +234,9 @@ def attitude_txt2(filename):
             dicts_y.append(y)
             dicts_z.append(z)
             dicts_w.append(w)
-
- 
- #   dataX = met.Metrics(in_min=np.min(dicts_x), in_max=np.max(dicts_x), in_mean=np.mean(dicts_x), in_dev=np.std(dicts_x), in_med=np.median(dicts_x))
-#    dataY = met.Metrics(in_min=np.min(dicts_y), in_max=np.max(dicts_y), in_mean=np.mean(dicts_y), in_dev=np.std(dicts_y), in_med=np.median(dicts_y))
-#    dataZ = met.Metrics(in_min=np.min(dicts_z), in_max=np.max(dicts_z), in_mean=np.mean(dicts_z), in_dev=np.std(dicts_z), in_med=np.median(dicts_z))
-#    dataW = met.Metrics(in_min=np.min(dicts_w), in_max=np.max(dicts_w), in_mean=np.mean(dicts_w), in_dev=np.std(dicts_w), in_med=np.median(dicts_w))
-    #print dataZ
     return (dicts_x,dicts_y,dicts_z,dicts_w)
 
+#function for extracting data for window testing of algorithm
 def get_all_types_window(Y,Z,path):
     '''
     Given folder, will extract arrays for each type of data.
@@ -264,7 +246,7 @@ def get_all_types_window(Y,Z,path):
     
     action_type = ["bk", "ns", "fd", "ld", "lu", "rd", "ru"]
 
-    # Right now, I'm classifying the nods as noisy data. If we want to recognize it, 
+    # Right now, classifies the nods as noisy data. If we want to recognize it, 
     # we can easily change the label
     # alphabetically: left down, left up, noisy  right down, right up
     dict_labels = {"bk": "noisy",  "ns": "noisy", "fd":"noisy", "ld":"left down", "lu":"left up", "rd":"right down", "ru":"right up"}
@@ -321,7 +303,7 @@ def get_all_types(Y, Z, path):
     
     action_type = ["bk", "ns", "fd", "ld", "lu", "rd", "ru"]
 
-    # Right now, I'm classifying the nods as noisy data. If we want to recognize it, 
+    # Classifies the nods as noisy data. If we want to recognize it, 
     # we can easily change the label
     # alphabetically: left down, left up, noisy  right down, right up
     dict_labels = {"bk": "noisy",  "ns": "noisy", "fd":"noisy", "ld":"left down", "lu":"left up", "rd":"right down", "ru":"right up"}
@@ -366,13 +348,6 @@ def get_all_types(Y, Z, path):
             Y.append(tmp)
             Z.append(dict_labels[d["label"]])
 
-        #else:
-            
-            #print date_key
-
-
-        #uaccl_x dev
-        #tmp.append(d["uaccl"][0].getDev())
 
 
 
@@ -409,7 +384,7 @@ def get_all_types(Y, Z, path):
                    # print "error"
         '''
 
-        #lists_w_labels.append(tmp +[date_key])
+ 
     return Y, Z
 
 '''
@@ -735,45 +710,12 @@ def main():
             overall_max(dataFrame,0)
             capture = overall_min(dataFrame,0)
     if args.test:
-
-#            train2()
-            #knn, scaler = train()
- #           Y = []
-#            Z = [] 
-#            get_all_types(Y, Z, "all_data")
-#            train(Y, Z)
- ##            Z1 = []
-#            get_all_types(Y1,Z1,"all_data")
-#            print "y1,", Y1[0]
             Y = []
             Z = []
-#            get_all_types_window(Y,Z,"all_data")
             get_all_types(Y,Z,"all_data")
 
             temp(Y,Z)
- #           print "Y", Y[1]
- #           train(Y,Z)
-#            temp(Y, Z)
-#
- #           classify()
 
-
-'''            knn = load('data.knn')
-            scaler = load('data.scaler')
-            tmp = []
-            tmp.append(0)
-            tmp.append(0.2)
-            tmp.append(0)
-            tmp.append(0)
-            tmp.append(0.2)
-            tmp.append(0.1)
-            tmp.append(1)
-            Features = []
-            Features.append(tmp)
-            scaler.transform(Features)
-            label = knn.predict(Features)
-            print("result:", label)
-'''
 
 if __name__ == '__main__':
     main()
