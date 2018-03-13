@@ -31,6 +31,9 @@ def keyPressL():
     keyB.press(keyboard.Key.left)
     keyB.release(keyboard.Key.left)
 
+'''
+Switches windows with alt-tab
+'''
 def keyPressAltTab():
     keyB = keyboard.Controller()
     keyB.press(keyboard.Key.alt)
